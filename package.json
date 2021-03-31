@@ -4,6 +4,7 @@
   "description": "",
   "keywords": [],
   "main": "src/index.js",
+  "license": "ISC",
   "dependencies": {
     "@react-three/fiber": "6.0.0",
     "react": "17.0.2",
