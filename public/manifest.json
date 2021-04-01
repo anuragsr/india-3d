@@ -1,11 +1,11 @@
 {
-  "short_name": "India 3D",
-  "name": "India 3D",
+  "short_name": "r3f-starter",
+  "name": "r3f-starter",
   "icons": [
     {
-      "src": "favicon2.png",
+      "src": "favicon.ico",
       "type": "image/png",
-      "sizes": "32x32"
+      "sizes": "192x192"
     }
   ],
   "start_url": ".",
