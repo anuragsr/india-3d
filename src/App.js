@@ -74,6 +74,22 @@ const CameraControls = () => {
 }
 , States = ({ name, url, position }) => {
   const gltf = useLoader(GLTFLoader, url )
+  // , stateArr = [
+  //   'MH',
+  //   'KA',
+  //   'LD',
+  //   'JK',
+  //   'HP',
+  //   'PB'
+  // ]
+  , stateArr = [
+    "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", 
+    "TN", "KL", "AP", "KA", "TS", "OD", "CG", "JH", "WB", 
+    "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB", 
+    // "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY"
+  ]
+
+  let arr = []
   // l(gltf.scene)
 
   // return <primitive name={name}
@@ -86,18 +102,20 @@ const CameraControls = () => {
   //   />
   return (
     <group name={name} scale={[2,2,2]} position={position}>{gltf.scene.children.map((child, idx) => {
-      l(child.name)
+      // l(child.name)
+      arr.push(child.name)
       return (
         <mesh
           key={idx}
           { ...child }
           position={position}
-          scale={child.name == "mh" || child.name == "ktk" ? [10,50,10]: [10,10,10]}
+          scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
           >
-          <meshStandardMaterial color={child.name == "mh" || child.name == "ktk" ? 0xfff000 : 0x000fff} />
+          <meshStandardMaterial color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff} />
             {/* emissive={guiData.activeObject === name ? 0xff0000 : material.origEmissive} /> */}
         </mesh>
       )})}
+    {/* {l(arr)} */}
     </group>
   )
 }
