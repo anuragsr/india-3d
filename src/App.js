@@ -82,12 +82,23 @@ const CameraControls = () => {
     "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
   ]
 
+  const { viewport } = useThree()
+  // viewport = canvas in 3d units (meters)
+
+  const ref = useRef()
+  useFrame(({ mouse }) => {
+    const x = (mouse.x * viewport.width) / 200
+    const y = (mouse.y * viewport.height) / 200
+    // ref.current.position.set(x, y, 0)
+    ref.current && ref.current.rotation.set(-y, x, 0)
+  })
+
   let arr = []
   // l(stateArr.length)
   // l(gltf.scene)
 
   return (
-    <group name={name} scale={[2,2,2]} position={position}>{gltf.scene.children.map((child, idx) => {
+    <group ref={ref} name={name} scale={[2,2,2]} position={position}>{gltf.scene.children.map((child, idx) => {
       // l(child.name)
       arr.push(child.name)
       return (
@@ -107,18 +118,24 @@ const CameraControls = () => {
 export default function App() {
   useEffect(() => {
     new HttpService()
-    .get('/data.json')
+    .get('https://api.covid19india.org/data.json')
     .then(res => {
       l(res.data.statewise)
     })
 
+    // new HttpService()
+    // .get('https://api.covid19india.org/data.json')
+    // .then((res) => {
+    //   l("again", res)
+    // })
   }, [])
+
   return (
-    <Canvas>
+    <Canvas camera={{ position: [0, 0, 15] }}>
       <ambientLight intensity={.3} />
+      <pointLight position={[0, 0, 150]} intensity={.5}/>
       {/*<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
       <pointLight position={[-10, -10, -10]} />*/}
-      <pointLight position={[0, 0, 150]} intensity={.5}/>
       <gridHelper args={[1000, 100]}/>
       <axesHelper args={[500]} />
       <CameraControls />

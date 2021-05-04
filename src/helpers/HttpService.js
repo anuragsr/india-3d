@@ -1,14 +1,11 @@
 import axios from 'axios'
-
-// Choose an env -> ["local", "eca", "prod"]
-const env = process.env.REACT_APP_ENV_TYPE
-let apiHost = "https://api.covid19india.org", call
+let call
 
 export default class HttpService {
   get(url, params, auth) {
-    let config = {
+    const config = {
       method: "get",
-      url: apiHost + url,
+      url,
       params,
       auth
     }
@@ -17,9 +14,9 @@ export default class HttpService {
   }
 
   delete(url, params, auth) {
-    let config = {
+    const config = {
       method: "delete",
-      url: apiHost + url,
+      url,
       params,
       auth
     }
@@ -28,9 +25,9 @@ export default class HttpService {
   }
 
   post(url, data, auth, onUploadProgress) {
-    let config = {
+    const config = {
       method: "post",
-      url: apiHost + url,
+      url,
       data,
       auth,
       onUploadProgress
@@ -40,9 +37,9 @@ export default class HttpService {
   }
 
   put(url, data, auth, onUploadProgress) {
-    let config = {
+    const config = {
       method: "put",
-      url: apiHost + url,
+      url,
       data,
       auth,
       onUploadProgress
