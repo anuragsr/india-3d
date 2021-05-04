@@ -1,8 +1,9 @@
-import React, { useRef, useState, Suspense } from 'react'
+import React, { useRef, useEffect, useState, Suspense } from 'react'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
+import HttpService from './helpers/HttpService'
 import { l } from './helpers'
 
 // Make OrbitControls known as <orbitControls />
@@ -74,32 +75,17 @@ const CameraControls = () => {
 }
 , States = ({ name, url, position }) => {
   const gltf = useLoader(GLTFLoader, url )
-  // , stateArr = [
-  //   'MH',
-  //   'KA',
-  //   'LD',
-  //   'JK',
-  //   'HP',
-  //   'PB'
-  // ]
   , stateArr = [
-    "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", 
-    "TN", "KL", "AP", "KA", "TS", "OD", "CG", "JH", "WB", 
-    "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB", 
-    // "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY"
+    "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
+    "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
+    // "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
+    "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
   ]
 
   let arr = []
+  // l(stateArr.length)
   // l(gltf.scene)
 
-  // return <primitive name={name}
-  //   object={gltf.scene}
-  //   position={position}
-  //   // onPointerOver={() => {
-  //   //   // l("over ground", event.object.name, event.object.parent.name)
-  //   //   setGuiData(prev => ({ ...prev, activeObject: "None" }))
-  //   // }}
-  //   />
   return (
     <group name={name} scale={[2,2,2]} position={position}>{gltf.scene.children.map((child, idx) => {
       // l(child.name)
@@ -111,25 +97,32 @@ const CameraControls = () => {
           position={position}
           scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
           >
-          <meshStandardMaterial color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff} />
-            {/* emissive={guiData.activeObject === name ? 0xff0000 : material.origEmissive} /> */}
+          <meshStandardMaterial side={THREE.DoubleSide} color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff} />
         </mesh>
       )})}
-    {/* {l(arr)} */}
     </group>
   )
 }
 
 export default function App() {
+  useEffect(() => {
+    new HttpService()
+    .get('/data.json')
+    .then(res => {
+      l(res.data.statewise)
+    })
+
+  }, [])
   return (
     <Canvas>
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />
+      <ambientLight intensity={.3} />
+      {/*<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+      <pointLight position={[-10, -10, -10]} />*/}
+      <pointLight position={[0, 0, 150]} intensity={.5}/>
       <gridHelper args={[1000, 100]}/>
-      <axesHelper args={[500]} /> 
+      <axesHelper args={[500]} />
       <CameraControls />
-      <Suspense fallback={<Box position={[0, 0, 0]} />}>      
+      <Suspense fallback={<Box position={[0, 0, 0]} />}>
         <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
