@@ -3,9 +3,12 @@ import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fibe
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
+
+import StatesData from './helpers/indiaStates'
 import HttpService from './helpers/HttpService'
 import { l } from './helpers'
 
+l(StatesData)
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 
@@ -94,7 +97,7 @@ const CameraControls = () => {
   })
 
   let arr = []
-  // l(stateArr.length)
+  l(stateArr)
   // l(gltf.scene)
 
   return (
@@ -120,7 +123,9 @@ export default function App() {
     new HttpService()
     .get('https://api.covid19india.org/data.json')
     .then(res => {
-      l(res.data.statewise)
+      const data = res.data.statewise
+      data.shift()
+      l(data)
     })
 
     // new HttpService()
