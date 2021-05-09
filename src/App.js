@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
 
-import StatesData from './helpers/indiaStates'
+import StatesData from './helpers/indiaStatesObj'
 import HttpService from './helpers/HttpService'
 import { l } from './helpers'
 
@@ -78,12 +78,12 @@ const CameraControls = () => {
 }
 , States = ({ name, url, position }) => {
   const gltf = useLoader(GLTFLoader, url )
-  , stateArr = [
-    "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
-    "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
-    // "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
-    "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
-  ]
+  // , stateArr = [
+  //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
+  //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
+  //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
+  //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
+  // ]
 
   const { viewport } = useThree()
   // viewport = canvas in 3d units (meters)
@@ -97,7 +97,7 @@ const CameraControls = () => {
   })
 
   let arr = []
-  l(stateArr)
+  // l(stateArr)
   // l(gltf.scene)
 
   return (
@@ -109,9 +109,13 @@ const CameraControls = () => {
           key={idx}
           { ...child }
           position={position}
-          scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
+          // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
           >
-          <meshStandardMaterial side={THREE.DoubleSide} color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff} />
+          <meshStandardMaterial
+            side={THREE.DoubleSide}
+            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}
+            // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+            />
         </mesh>
       )})}
     </group>
@@ -136,7 +140,7 @@ export default function App() {
   }, [])
 
   return (
-    <Canvas camera={{ position: [0, 0, 15] }}>
+    <Canvas camera={{ position: [0, 0, 35] }}>
       <ambientLight intensity={.3} />
       <pointLight position={[0, 0, 150]} intensity={.5}/>
       {/*<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />

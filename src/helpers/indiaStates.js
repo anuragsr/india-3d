@@ -123,11 +123,11 @@ export default [{
   area: 112077,
   crimeRate: 342,
   forest: 18.22,
-  literacy: NaN,
+  literacy: 0,
   state: "Telangana",
   statecode: "TS",
   population: 35003674,
-  poverty: NaN,
+  poverty: 0,
   Rank: "12",
   sexRatio: 988
 }, {
@@ -278,6 +278,7 @@ export default [{
   crimeRate: 83,
   forest: 75.33,
   literacy: 76.69,
+  state: "Nagaland",
   state: "NL",
   population: 1978502,
   poverty: 18.88,
