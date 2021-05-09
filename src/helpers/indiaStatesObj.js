@@ -9,7 +9,8 @@ export default {
     poverty: 1,
     Rank: "UT6",
     sexRatio: 876,
-    state: "Andaman and Nicobar Islands"
+    state: "Andaman and Nicobar Islands",
+    color: 0xC92C48
   },
   AP: {
     area: 162968,
@@ -32,7 +33,8 @@ export default {
     poverty: 34.67,
     Rank: "26",
     sexRatio: 938,
-    state: "Arunachal Pradesh"
+    state: "Arunachal Pradesh",
+    color: 0xE5F73A
   },
   AS: {
     area: 78438,
@@ -55,7 +57,8 @@ export default {
     poverty: 33.571,
     Rank: "3",
     sexRatio: 918,
-    state: "Bihar"
+    state: "Bihar",
+    color: 0x3023BE
   },
   CG: {
     area: 135191,
@@ -66,7 +69,8 @@ export default {
     poverty: 40,
     Rank: "17",
     sexRatio: 991,
-    state: "Chhattisgarh"
+    state: "Chhattisgarh",
+    color: 0xC6B946
   },
   CH: {
     area: 114,
@@ -77,7 +81,8 @@ export default {
     poverty: 21.81,
     Rank: "UT4",
     sexRatio: 818,
-    state: "Chandigarh"
+    state: "Chandigarh",
+    color: 0x76E3B4
   },
   DD: {
     area: 603,
@@ -88,7 +93,8 @@ export default {
     poverty: 9.86,
     Rank: "UT1",
     sexRatio: 711,
-    state: "Daman and Diu"
+    state: "Daman and Diu",
+    color: 0x2B0CEC
   },
   DL: {
     area: 1484,
@@ -99,7 +105,8 @@ export default {
     poverty: 0,
     Rank: "29",
     sexRatio: 868,
-    state: "NCT of Delhi"
+    state: "NCT of Delhi",
+    color: 0xD1705F
   },
   DN: {
     area: 603,
@@ -110,7 +117,8 @@ export default {
     poverty: 39.31,
     Rank: "UT5",
     sexRatio: 711,
-    state: "Dadra and Nagar Haveli"
+    state: "Dadra and Nagar Haveli",
+    color: 0xACF787
   },
   GA: {
     area: 3702,
@@ -121,7 +129,8 @@ export default {
     poverty: 5.09,
     Rank: "25",
     sexRatio: 973,
-    state: "Goa"
+    state: "Goa",
+    color: 0xCADB74
   },
   GJ: {
     area: 196024,
@@ -132,7 +141,8 @@ export default {
     poverty: 16.63,
     Rank: "9",
     sexRatio: 919,
-    state: "Gujarat"
+    state: "Gujarat",
+    color: 0xCC54F9
   },
   HP: {
     area: 55673,
@@ -167,7 +177,8 @@ export default {
     poverty: 36.96,
     Rank: "14",
     sexRatio: 948,
-    state: "Jharkhand"
+    state: "Jharkhand",
+    color: 0xD36920
   },
   JK: {
     area: 42241,
@@ -190,7 +201,8 @@ export default {
     poverty: 20.91,
     Rank: "8",
     sexRatio: 973,
-    state: "Karnataka"
+    state: "Karnataka",
+    color: 0xF4869F
   },
   KL: {
     area: 38863,
@@ -201,7 +213,8 @@ export default {
     poverty: 7.05,
     Rank: "13",
     sexRatio: 1,
-    state: "Kerala"
+    state: "Kerala",
+    color: 0xC66161
   },
   LA: {
     area: 96701,
@@ -224,7 +237,8 @@ export default {
     poverty: 2.77,
     Rank: "UT8",
     sexRatio: 946,
-    state: "Lakshadweep"
+    state: "Lakshadweep",
+    color: 0x10653A
   },
   MH: {
     area: 307713,
@@ -235,7 +249,8 @@ export default {
     poverty: 17.35,
     Rank: "2",
     sexRatio: 929,
-    state: "Maharashtra"
+    state: "Maharashtra",
+    color: 0x4A44DC
   },
   ML: {
     area: 22429,
@@ -246,7 +261,8 @@ export default {
     poverty: 11.87,
     Rank: "22",
     sexRatio: 989,
-    state: "Meghalaya"
+    state: "Meghalaya",
+    color: 0x13BFC4
   },
   MN: {
     area: 22327,
@@ -257,7 +273,8 @@ export default {
     poverty: 32.59,
     Rank: "23",
     sexRatio: 992,
-    state: "Manipur"
+    state: "Manipur",
+    color: 0x1F0289
   },
   MP: {
     area: 308245,
@@ -268,7 +285,8 @@ export default {
     poverty: 31.65,
     Rank: "5",
     sexRatio: 931,
-    state: "Madhya Pradesh"
+    state: "Madhya Pradesh",
+    color: 0x4EC952
   },
   MZ: {
     area: 21081,
@@ -279,7 +297,8 @@ export default {
     poverty: 20.4,
     Rank: "27",
     sexRatio: 976,
-    state: "Mizoram"
+    state: "Mizoram",
+    color: 0xF0AA4B
   },
   NL: {
     area: 16579,
@@ -290,7 +309,8 @@ export default {
     poverty: 18.88,
     Rank: "24",
     sexRatio: 931,
-    state: "Nagaland"
+    state: "Nagaland",
+    color: 0xEEB0CA
   },
   OD: {
     area: 155707,
@@ -301,7 +321,8 @@ export default {
     poverty: 36.89,
     Rank: "11",
     sexRatio: 979,
-    state: "Odisha"
+    state: "Odisha",
+    color: 0x6332AB
   },
   PB: {
     area: 50362,
@@ -324,7 +345,8 @@ export default {
     poverty: 9.69,
     Rank: "UT3",
     sexRatio: 1,
-    state: "Puducherry"
+    state: "Puducherry",
+    color: 0x4B0B4A
   },
   RJ: {
     area: 342239,
@@ -347,7 +369,8 @@ export default {
     poverty: 8.19,
     Rank: "28",
     sexRatio: 890,
-    state: "Sikkim"
+    state: "Sikkim",
+    color: 0xE45F9F
   },
   TN: {
     area: 130051,
@@ -358,7 +381,8 @@ export default {
     poverty: 11.8,
     Rank: "6",
     sexRatio: 996,
-    state: "Tamil Nadu"
+    state: "Tamil Nadu",
+    color: 0xEA8630
   },
   TR: {
     area: 10486,
@@ -369,7 +393,8 @@ export default {
     poverty: 14.05,
     Rank: "21",
     sexRatio: 960,
-    state: "Tripura"
+    state: "Tripura",
+    color: 0x869A08
   },
   TS: {
     area: 112077,
@@ -380,7 +405,8 @@ export default {
     poverty: 0,
     Rank: "12",
     sexRatio: 988,
-    state: "Telangana"
+    state: "Telangana",
+    color: 0x0E90AB
   },
   UK: {
     area: 53483,
@@ -415,6 +441,7 @@ export default {
     poverty: 19.98,
     Rank: "4",
     sexRatio: 953,
-    state: "West Bengal"
+    state: "West Bengal",
+    color: 0x239001
   }
 }
