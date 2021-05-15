@@ -1,16 +1,20 @@
-import React, { useRef, useState } from 'react'
-import { extend, Canvas, useFrame, useThree } from '@react-three/fiber'
+import React, { useRef, useState, useEffect, Suspense } from 'react'
+import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
+
+import StatesData from './helpers/indiaStatesObj'
+import HttpService from './helpers/HttpService'
 
 // Debug
 import DatGui, { DatBoolean, DatString } from 'react-dat-gui'
 import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
+import { l } from './helpers'
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
-
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
   // We need these to setup the OrbitControls component.
@@ -43,7 +47,7 @@ const CameraControls = () => {
 
   // Ref to the controls, so that we can update them on every frame using useFrame
   const controls = useRef()
-  useFrame(() => { controls.current.update()})
+  useFrame(() => { controls.current && controls.current.update()})
 
   // If we need to set parameters for controls
   // controls.current && setControlParams()
@@ -58,7 +62,7 @@ const CameraControls = () => {
   const [active, setActive] = useState(false)
   // Rotate mesh every frame, this is outside of React without overhead
   useFrame(() => {
-    mesh.current.rotation.x = mesh.current.rotation.y += 0.01
+    if(mesh.current) mesh.current.rotation.x = mesh.current.rotation.y += 0.01
   })
   return (
     <mesh
@@ -69,7 +73,7 @@ const CameraControls = () => {
       onPointerOver={(e) => setHover(true)}
       onPointerOut={(e) => setHover(false)}>
       <boxBufferGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
+      <meshStandardMaterial color={hovered ? 'hotpink' : 'green'} />
     </mesh>
   )
 }
@@ -84,6 +88,96 @@ const CameraControls = () => {
     </pointLight>
   )
 }
+, States = ({ name, url, position }) => {
+  const gltf = useLoader(GLTFLoader, url )
+  // , stateArr = [
+  //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
+  //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
+  //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
+  //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
+  // ]
+  // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
+  // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+
+  // viewport -> canvas in 3d units (meters)
+  const { viewport } = useThree()
+  , ref = useRef()
+  // useFrame(({ mouse }) => {
+  //   const x = (mouse.x * viewport.width) / 300
+  //   const y = (mouse.y * viewport.height) / 300
+  //   ref.current && ref.current.rotation.set(-y, x, 0)
+  // })
+
+  return (
+    <group ref={ref} name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {
+      return (
+        <mesh key={idx}
+          // onPointerOver={(e) => l("In", e.eventObject.name)}
+          // onPointerOut={(e) => l("Out", e.eventObject.name)}
+          position={position} { ...child }>
+          <meshPhongMaterial side={THREE.DoubleSide}
+            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}/>
+        </mesh>
+      )})}
+    </group>
+  )
+}
+, Text3DHindi = ({ text, color, fontUrl, position, rotation }) => {
+  const [shapes, setShapes] = useState([])
+  , [offset, setOffset] = useState(0)
+  , geoRef = useRef(null)
+  , extrudeSettings = {
+    steps: 1,
+    amount: 10,
+    bevelEnabled: true,
+    bevelThickness: 1,
+    bevelSize: 1,
+    bevelSegments: 1
+  }
+
+  useEffect(() => {
+    harfbuzz.createFont(fontUrl, 150, font => {
+      const allCommands = harfbuzz.commands(font, text, 150, 0, 0)
+      let shapes = []
+      for(let i = 0; i < allCommands.length; i++) {
+        let path = new THREE.ShapePath(), commands = allCommands[i]
+        for(let j = 0; j < commands.length; j++) {
+          let command = commands[j]
+          switch(command.type) {
+            case "M": path.moveTo(command.x, command.y); break;
+            case "L": path.lineTo(command.x, command.y); break;
+            case "Q": path.quadraticCurveTo(command.x1, command.y1, command.x, command.y); break;
+            case "Z": path.currentPath = new THREE.Path(); path.subPaths.push( path.currentPath ); break;
+            default: throw "Unsupported command " + JSON.stringify(command)
+          }
+        }
+        shapes = shapes.concat( path.toShapes(true, false) )
+      }
+      setShapes(shapes)
+    })
+  }, [])
+
+  useEffect(() => {
+    const geo = geoRef.current
+    if(geo){
+      geo.computeBoundingBox()
+      setOffset(-0.5 * ( geo.boundingBox.max.x - geo.boundingBox.min.x ))
+    }
+  }, [shapes.length])
+
+  return (
+    shapes.length ?
+    <group position={position} rotation={rotation} scale={.015}>
+      <mesh
+        position={[offset, 0, 0]}
+        rotation={[0, Math.PI * 2, 0]}
+        scale={[1, -1, 1]}>
+        <extrudeBufferGeometry ref={geoRef} args={[shapes, extrudeSettings]} />
+        <meshPhongMaterial side={THREE.DoubleSide} color={color} />
+      </mesh>
+    </group> :  null
+  )
+}
 
 export default function App() {
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
@@ -93,21 +187,46 @@ export default function App() {
         <DatString path='activeObject' label='Active Object' />
       </DatGui>
       {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
-      <Canvas>
-        <ambientLight intensity={0.5} />
-        <PointLightWithHelper 
-          visible={guiData.showHelpers} 
-          color={0xffffff} 
+      <Canvas camera={{ position: [0, 0, 15] }}>
+        <ambientLight intensity={.3} />
+        <PointLightWithHelper
+          visible={guiData.showHelpers}
+          color={0xffffff}
           intensity={1}
-          position={[70, 50, 5]}/>
+          position={[100, 50, 50]}
+          />
         {guiData.showHelpers && <>
           <gridHelper args={[1000, 100]}/>
-          <axesHelper args={[500]} /> 
+          <axesHelper args={[500]} />
         </>}
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <pointLight position={[-10, -10, -10]} />
         <CameraControls />
-        <Box position={[0, 0, 0]} />
+        <Suspense fallback={<Box position={[0, 0, 0]} />}>
+          {/*<Text3DHindi
+            fontUrl="assets/fonts/Kalam-Regular.ttf"
+            text="जनसंख्या"
+            color="blue"
+            position={[0, 3, 2]}/>
+            <Text3DHindi
+            fontUrl="assets/fonts/Teko-Regular.ttf"
+            text="जनसंख्या"
+            color="red"
+            position={[-5, 0, 2]}/>
+            */}
+            <Text3DHindi
+              fontUrl="assets/fonts/Poppins-Regular.ttf"
+              text="जनसंख्या"
+              color="blue"
+              position={[14, 2, 0]}/>
+            <Text3DHindi
+              fontUrl="assets/fonts/NotoSans-Regular.ttf"
+              // fontUrl="assets/fonts/Poppins-Regular.ttf"
+              text="जनसंख्या"
+              color="red"
+              position={[12, 7, 0]}
+              // rotation={[0, -.2, 0]}
+            />
+            <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+          </Suspense>
       </Canvas>
     </>
   )
