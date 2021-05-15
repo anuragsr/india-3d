@@ -6,9 +6,13 @@ import * as THREE from 'three'
 
 import StatesData from './helpers/indiaStatesObj'
 import HttpService from './helpers/HttpService'
+
+// Debug
+import DatGui, { DatBoolean, DatString } from 'react-dat-gui'
+import 'react-dat-gui/dist/index.css'
+import FPSStats from 'react-fps-stats'
 import { l } from './helpers'
 
-l(StatesData)
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 
@@ -76,6 +80,17 @@ const CameraControls = () => {
     </mesh>
   )
 }
+, PointLightWithHelper = ({ color, position, visible, intensity }) => {
+  const lightProps = { color, position, intensity }
+  return (
+    <pointLight {...lightProps}>
+      <mesh visible={visible}>
+        <sphereBufferGeometry/>
+        <meshStandardMaterial color={0x0000ff} />
+      </mesh>
+    </pointLight>
+  )
+}
 , States = ({ name, url, position }) => {
   const gltf = useLoader(GLTFLoader, url )
   // , stateArr = [
@@ -85,182 +100,116 @@ const CameraControls = () => {
   //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
   // ]
 
-  const { viewport } = useThree()
   // viewport = canvas in 3d units (meters)
+  const { viewport } = useThree()
+  , ref = useRef()
+  // useFrame(({ mouse }) => {
+  //   const x = (mouse.x * viewport.width) / 300
+  //   const y = (mouse.y * viewport.height) / 300
+  //   ref.current && ref.current.rotation.set(-y, x, 0)
+  // })
 
-  const ref = useRef()
-  useFrame(({ mouse }) => {
-    const x = (mouse.x * viewport.width) / 300
-    const y = (mouse.y * viewport.height) / 300
-    // ref.current.position.set(x, y, 0)
-    ref.current && ref.current.rotation.set(-y, x, 0)
-  })
-
-  let arr = []
-  // l(stateArr)
-  // l(gltf.scene)
-
+  // let arr = []
+  // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
+  // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+  // color={0xfff000}
   return (
     <group ref={ref} name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {
-      // l(child.name)
-      arr.push(child.name)
       return (
-        <mesh
-          key={idx}
-          { ...child }
-          position={position}
-          // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
-          >
-          <meshStandardMaterial
-            side={THREE.DoubleSide}
-            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}
-            // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
-            // color={0xfff000}
-            />
+        <mesh key={idx}
+          // onPointerOver={(e) => l("In", e.eventObject.name)}
+          // onPointerOut={(e) => l("Out", e.eventObject.name)}
+          position={position} { ...child }>
+          <meshPhongMaterial side={THREE.DoubleSide}
+            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}/>
         </mesh>
       )})}
     </group>
   )
 }
-, Text3D = ({ fontUrl }) => {
-    const font = useLoader(THREE.FontLoader, fontUrl)
-    const config = useMemo(
-      () => ({
-        font, size: 10, height: 1, curveSegments: 2, bevelEnabled: true, bevelThickness: 6, bevelSize: .5, bevelOffset: 0, bevelSegments: 2
-      }), [font])
-    // l(font)
+, Text3DHindi = ({ text, color, fontUrl, position, rotation }) => {
+  const [shapes, setShapes] = useState([])
+  , [offset, setOffset] = useState(0)
+  , geoRef = useRef(null)
+  , extrudeSettings = {
+    steps: 1,
+    amount: 10,
+    bevelEnabled: true,
+    bevelThickness: 1,
+    bevelSize: 1,
+    bevelSegments: 1
+  }
 
-    return (
-      <mesh>
-        {/*<textGeometry args={["अयान A", config]} />*/}
-        <textGeometry args={["Anurag", config]} />
-        <meshStandardMaterial side={THREE.DoubleSide} color={0xfff000} />
-      </mesh>
-    )
-}
-, TextHindi = ({ text, fontUrl, position }) => {
-  // const config = useMemo(
-  //   () => ({size: 10, height: 1, curveSegments: 2, bevelEnabled: true, bevelThickness: 6, bevelSize: .5, bevelOffset: 0, bevelSegments: 2
-  //   }), [])
-    // l(harfbuzz, opentype)
-    // const [font, setFont] = useState([])
-    const [shapes, setShapes] = useState([])
-    const [offset, setOffset] = useState(0)
-    // const [mesh, setMesh] = useState(null)
-    // // const [allCommands, setAllCommands] = useState([])
-    // harfbuzz.createFont(fontUrl, 150, font => {
-    //   // setFont(font)
-    //   l(font)
-    //   // setAllCommands(harfbuzz.commands(font, text, 150, 0, 0))
-    // })
-
-    // useEffect(() => {
-    //   // l(allCommands)
-    //   l(font)
-    // }, [font])
-
-    const extrudeSettings = {
-      steps: 1,
-      amount: 10,
-      bevelEnabled: true,
-      bevelThickness: 1,
-      bevelSize: 1,
-      bevelSegments: 1
-    };
-    let centerOffset = 0
-    // const CustGeometry = new THREE.ExtrudeBufferGeometry( shapes, extrudeSettings );
-    // extend({ CustGeometry })
-
-    useEffect(() => {
-      // l(allCommands)
-      // l(font)
-      harfbuzz.createFont(fontUrl, 150, font => {
-        // setFont(font)
-        // l(font)
-        // setAllCommands(harfbuzz.commands(font, text, 150, 0, 0))
-        let allCommands = harfbuzz.commands(font, text, 150, 0, 0);
-        var shapes = []
-
-        for(let i=0; i<allCommands.length; i++) {
-          let path = new THREE.ShapePath();
-          let commands = allCommands[i];
-          for(let j=0; j<commands.length; j++) {
-            let command = commands[j];
-            switch(command.type) {
-              case "M":
-                path.moveTo(command.x, command.y);
-                break;
-              case "L":
-                path.lineTo(command.x, command.y);
-                break;
-              case "Q":
-                path.quadraticCurveTo(command.x1, command.y1, command.x, command.y);
-                break;
-              case "Z":
-                path.currentPath = new THREE.Path();
-                path.subPaths.push( path.currentPath );
-                break;
-              default:
-                throw "Unsupported command " + JSON.stringify(command);
-            }
+  useEffect(() => {
+    harfbuzz.createFont(fontUrl, 150, font => {
+      const allCommands = harfbuzz.commands(font, text, 150, 0, 0)
+      let shapes = []
+      for(let i = 0; i < allCommands.length; i++) {
+        let path = new THREE.ShapePath(), commands = allCommands[i]
+        for(let j = 0; j < commands.length; j++) {
+          let command = commands[j]
+          switch(command.type) {
+            case "M": path.moveTo(command.x, command.y); break;
+            case "L": path.lineTo(command.x, command.y); break;
+            case "Q": path.quadraticCurveTo(command.x1, command.y1, command.x, command.y); break;
+            case "Z": path.currentPath = new THREE.Path(); path.subPaths.push( path.currentPath ); break;
+            default: throw "Unsupported command " + JSON.stringify(command)
           }
-          shapes = shapes.concat( path.toShapes(true, false) )
         }
-        setShapes(shapes)
-      })
-    }, [])
+        shapes = shapes.concat( path.toShapes(true, false) )
+      }
+      setShapes(shapes)
+    })
+  }, [])
 
-    useEffect(() => {
-      if(!shapes.length) return
-      var geometry = new THREE.ExtrudeBufferGeometry( shapes, extrudeSettings );
-      geometry.computeBoundingBox();
-      geometry.computeVertexNormals();
-      centerOffset = -0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-      var centerOffset = -0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-      console.log(centerOffset);
+  useEffect(() => {
+    const geo = geoRef.current
+    if(geo){
+      geo.computeBoundingBox()
+      setOffset(-0.5 * ( geo.boundingBox.max.x - geo.boundingBox.min.x ))
+    }
+  }, [shapes.length])
 
-      // const textMesh1 = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ) );
-      //
-      // textMesh1.position.x = centerOffset;
-      // textMesh1.position.y = 0;
-      // textMesh1.position.z = 0;
-      //
-      // textMesh1.rotation.x = 0;
-      // textMesh1.rotation.y = Math.PI * 2;
-      // textMesh1.scale.y *= -1;
-      // setMesh(textMesh1)
-      // l(centerOffset)
-      // setOffset(centerOffset)
-    }, [shapes])
-
-    return (
-      // shapes.length ?
-      // <group position={position} children={[mesh]}>
-      // {mesh}
-      // </group> :  null
-
-      shapes.length ?
-      <group position={position}>
-        <mesh position={[-offset*200, 0, 0]}
-          rotation={[-Math.PI, Math.PI * 2, 0]}
-          // scale={[.2, .2, .2]}
-          >
-          // <boxBufferGeometry args={[2,2,2]} />
-          <extrudeBufferGeometry args={[shapes, extrudeSettings]} />
-          <meshStandardMaterial side={THREE.DoubleSide} color={0xff00f0} />
-        </mesh>
-      </group> :  null
-    )
+  return (
+    shapes.length ?
+    <group position={position} rotation={rotation} scale={.015}>
+      <mesh
+        position={[offset, 0, 0]}
+        rotation={[0, Math.PI * 2, 0]}
+        scale={[1, -1, 1]}>
+        <extrudeBufferGeometry ref={geoRef} args={[shapes, extrudeSettings]} />
+        <meshPhongMaterial side={THREE.DoubleSide} color={color} />
+      </mesh>
+    </group> :  null
+  )
 }
+// , Text3D = ({ fontUrl }) => {
+  //     const font = useLoader(THREE.FontLoader, fontUrl)
+  //     const config = useMemo(
+    //       () => ({
+      //         font, size: 10, height: 1, curveSegments: 2, bevelEnabled: true, bevelThickness: 6, bevelSize: .5, bevelOffset: 0, bevelSegments: 2
+      //       }), [font])
+      //     // l(font)
+      //
+      //     return (
+        //       <mesh>
+        //         {/*<textGeometry args={["अयान A", config]} />*/}
+        //         <textGeometry args={["Anurag", config]} />
+        //         <meshStandardMaterial side={THREE.DoubleSide} color={0xfff000} />
+        //       </mesh>
+        //     )
+        // }
 
-export default function App() {
+export default () => {
+  const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
+
   useEffect(() => {
     new HttpService()
     .get('https://api.covid19india.org/data.json')
     .then(res => {
       const data = res.data.statewise
       data.shift()
-      l(data)
+      // l(StatesData, data)
     })
 
     // new HttpService()
@@ -270,22 +219,54 @@ export default function App() {
     // })
   }, [])
 
-  return (
-    <Canvas camera={{ position: [0, 0, 17] }}>
-      <ambientLight intensity={.3} />
-      <pointLight position={[0, 0, 150]} intensity={.5}/>
-      {/*<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />*/}
-      <gridHelper args={[1000, 100]}/>
-      <axesHelper args={[500]} />
-      <CameraControls />
-      <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        <TextHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="शानदार"
-          position={[0, 0, 0]}/>
-        <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
-      </Suspense>
-    </Canvas>
+  return (<>
+      <DatGui data={guiData} onUpdate={setGuiData}>
+        <DatBoolean path='showHelpers' label='Show Helpers' />
+        <DatString path='activeObject' label='Active Object' />
+      </DatGui>
+      {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
+
+      <Canvas camera={{ position: [0, 0, 15] }}>
+        <ambientLight intensity={.3} />
+        {/*<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />*/}
+        <PointLightWithHelper
+          visible={guiData.showHelpers}
+          color={0xffffff}
+          intensity={1}
+          position={[100, 50, 50]}
+          />
+        {guiData.showHelpers && <>
+          <gridHelper args={[1000, 100]}/>
+          <axesHelper args={[500]} />
+        </>}
+        <CameraControls />
+        <Suspense fallback={<Box position={[0, 0, 0]} />}>
+          {/*<Text3DHindi
+            fontUrl="assets/fonts/Kalam-Regular.ttf"
+            text="जनसंख्या"
+            color="blue"
+            position={[0, 3, 2]}/>
+          <Text3DHindi
+            fontUrl="assets/fonts/Teko-Regular.ttf"
+            text="जनसंख्या"
+            color="red"
+            position={[-5, 0, 2]}/>
+          <Text3DHindi
+            fontUrl="assets/fonts/Poppins-Regular.ttf"
+            text="जनसंख्या"
+            color="hotpink"
+            position={[5, 0, 2]}/>*/}
+          <Text3DHindi
+            fontUrl="assets/fonts/NotoSans-Regular.ttf"
+            // fontUrl="assets/fonts/Poppins-Regular.ttf"
+            text="जनसंख्या"
+            color="red"
+            position={[12, 7, 0]}
+            // rotation={[0, -.2, 0]}
+            />
+          <States name="States" position={[-5, 0, 0]} url="assets/models/states.glb"/>
+        </Suspense>
+      </Canvas>
+    </>
   )
 }
