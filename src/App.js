@@ -14,8 +14,6 @@ import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
 import { l } from './helpers'
 
-l(a)
-
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 const CameraControls = () => {
@@ -82,33 +80,46 @@ const CameraControls = () => {
   )
 }
 , BoxSpring = ({ position }) => {
-  // This reference will give us direct access to the mesh
-  const mesh = useRef()
-  // Set up state for the hovered and active state
-  const [hovered, setHover] = useState(false)
   const [active, setActive] = useState(false)
-  // Rotate mesh every frame, this is outside of React without overhead
-  // useFrame(() => {
-  //   if(mesh.current) mesh.current.rotation.x = mesh.current.rotation.y += 0.01
-  // })
-
   const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-  // const [active, set] = useState(false)
   // react-spring is a animation library that turns static values into animated springs
-  const { spring } = useSpring({ spring: Number(active), config })
-  const colorS = spring.to([0, 1], ['#6246ea', '#e45858'])
+  // const { spring } = useSpring({ spring: Number(active), config })
+  // const colorS = spring.to([0, 1], ['#6246ea', '#e45858'])
+
+  const props = useSpring({
+    from: {
+      color: new THREE.Color("hsl(195, 100%, 10%)"),
+      scale: 2,
+      rotationY: 0
+    },
+    to: {
+      color: new THREE.Color("hsl(195, 100%, 90%)"),
+      scale: 1,
+      rotationY: Math.PI
+    },
+    reset: true,
+    reverse: active,
+    config
+    // delay: 200,
+    // config: config.molasses,
+    // onRest: () => setActive(!active),
+  })
+
 
   return (
     <a.mesh
       position={position}
-      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      scale={props.scale}
+      rotation-y={props.rotationY}
+      // scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
       onClick={(e) => setActive(!active)}
       // onPointerOver={(e) => setHover(true)}
       // onPointerOut={(e) => setHover(false)}
       >
       <boxBufferGeometry args={[1, 1, 1]} />
       {/*<meshStandardMaterial color={hovered ? 'hotpink' : 'green'} />*/}
-      <meshStandardMaterial color={colorS} />
+      {/*<meshStandardMaterialcolor={colorS} />*/}
+      <a.meshStandardMaterial transparent color={props.color} />
     </a.mesh>
   )
 }
@@ -142,19 +153,49 @@ const CameraControls = () => {
   //   const y = (mouse.y * viewport.height) / 300
   //   ref.current && ref.current.rotation.set(-y, x, 0)
   // })
+  const [active, setActive] = useState(false)
+  const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  const props = useSpring({
+    from: {
+      // color: new THREE.Color("hsl(195, 100%, 10%)"),
+      scale: 3,
+      scaleY: 300,
+    },
+    to: {
+      // color: new THREE.Color("hsl(195, 100%, 90%)"),
+      scale: 2,
+      scaleY: 2,
+    },
+    reset: true,
+    reverse: active,
+    config
+    // delay: 200,
+    // config: config.molasses,
+    // onRest: () => setActive(!active),
+  })
 
+  {/*<group name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {*/}
   return (
-    <group name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {
+    <a.group
+      name={name} scale={props.scale} position={position}
+      // name={name} scale={[1, 1, 1]} position={position}
+      onClick={(e) => {l("click"); setActive(!active)}}
+      >{gltf.scene.children.map((child, idx) => {
       return (
-        <mesh key={idx}
+        <a.mesh key={idx}
           // onPointerOver={(e) => l("In", e.eventObject.name)}
           // onPointerOut={(e) => l("Out", e.eventObject.name)}
-          position={position} { ...child }>
+          { ...child }
+
+          position={position}
+          scale-y={props.scaleY}
+          >
           <meshPhongMaterial side={THREE.DoubleSide}
-            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}/>
-        </mesh>
+            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}
+            />
+        </a.mesh>
       )})}
-    </group>
+    </a.group>
   )
 }
 , Text3DHindi = ({ text, color, fontUrl, position, rotation }) => {
