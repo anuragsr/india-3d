@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, Suspense } from 'react'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { a, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
 
 import StatesData from './helpers/indiaStatesObj'
@@ -12,6 +13,8 @@ import DatGui, { DatBoolean, DatString } from 'react-dat-gui'
 import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
 import { l } from './helpers'
+
+l(a)
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
@@ -54,7 +57,7 @@ const CameraControls = () => {
 
   return <orbitControls ref={controls} args={[camera, domElement]} />
 }
-, Box = props => {
+, Box = ({ position }) => {
   // This reference will give us direct access to the mesh
   const mesh = useRef()
   // Set up state for the hovered and active state
@@ -64,10 +67,11 @@ const CameraControls = () => {
   useFrame(() => {
     if(mesh.current) mesh.current.rotation.x = mesh.current.rotation.y += 0.01
   })
+
   return (
     <mesh
-      {...props}
       ref={mesh}
+      position={position}
       scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
       onClick={(e) => setActive(!active)}
       onPointerOver={(e) => setHover(true)}
@@ -75,6 +79,37 @@ const CameraControls = () => {
       <boxBufferGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color={hovered ? 'hotpink' : 'green'} />
     </mesh>
+  )
+}
+, BoxSpring = ({ position }) => {
+  // This reference will give us direct access to the mesh
+  const mesh = useRef()
+  // Set up state for the hovered and active state
+  const [hovered, setHover] = useState(false)
+  const [active, setActive] = useState(false)
+  // Rotate mesh every frame, this is outside of React without overhead
+  // useFrame(() => {
+  //   if(mesh.current) mesh.current.rotation.x = mesh.current.rotation.y += 0.01
+  // })
+
+  const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  // const [active, set] = useState(false)
+  // react-spring is a animation library that turns static values into animated springs
+  const { spring } = useSpring({ spring: Number(active), config })
+  const colorS = spring.to([0, 1], ['#6246ea', '#e45858'])
+
+  return (
+    <a.mesh
+      position={position}
+      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      onClick={(e) => setActive(!active)}
+      // onPointerOver={(e) => setHover(true)}
+      // onPointerOut={(e) => setHover(false)}
+      >
+      <boxBufferGeometry args={[1, 1, 1]} />
+      {/*<meshStandardMaterial color={hovered ? 'hotpink' : 'green'} />*/}
+      <meshStandardMaterial color={colorS} />
+    </a.mesh>
   )
 }
 , PointLightWithHelper = ({ color, position, visible, intensity }) => {
@@ -100,8 +135,8 @@ const CameraControls = () => {
   // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
 
   // viewport -> canvas in 3d units (meters)
-  const { viewport } = useThree()
-  , ref = useRef()
+  // const { viewport } = useThree()
+  // , ref = useRef()
   // useFrame(({ mouse }) => {
   //   const x = (mouse.x * viewport.width) / 300
   //   const y = (mouse.y * viewport.height) / 300
@@ -109,7 +144,7 @@ const CameraControls = () => {
   // })
 
   return (
-    <group ref={ref} name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {
+    <group name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {
       return (
         <mesh key={idx}
           // onPointerOver={(e) => l("In", e.eventObject.name)}
@@ -182,52 +217,68 @@ const CameraControls = () => {
 export default function App() {
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
   return (<>
-      <DatGui data={guiData} onUpdate={setGuiData}>
-        <DatBoolean path='showHelpers' label='Show Helpers' />
-        <DatString path='activeObject' label='Active Object' />
-      </DatGui>
-      {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
-      <Canvas camera={{ position: [0, 0, 15] }}>
-        <ambientLight intensity={.3} />
-        <PointLightWithHelper
-          visible={guiData.showHelpers}
-          color={0xffffff}
-          intensity={1}
-          position={[100, 50, 50]}
-          />
-        {guiData.showHelpers && <>
-          <gridHelper args={[1000, 100]}/>
-          <axesHelper args={[500]} />
-        </>}
-        <CameraControls />
-        <Suspense fallback={<Box position={[0, 0, 0]} />}>
-          {/*<Text3DHindi
-            fontUrl="assets/fonts/Kalam-Regular.ttf"
-            text="जनसंख्या"
-            color="blue"
-            position={[0, 3, 2]}/>
-            <Text3DHindi
-            fontUrl="assets/fonts/Teko-Regular.ttf"
-            text="जनसंख्या"
-            color="red"
-            position={[-5, 0, 2]}/>
-            */}
-            <Text3DHindi
-              fontUrl="assets/fonts/Poppins-Regular.ttf"
-              text="जनसंख्या"
-              color="blue"
-              position={[14, 2, 0]}/>
-            <Text3DHindi
-              fontUrl="assets/fonts/NotoSans-Regular.ttf"
-              // fontUrl="assets/fonts/Poppins-Regular.ttf"
-              text="जनसंख्या"
-              color="red"
-              position={[12, 7, 0]}
-              // rotation={[0, -.2, 0]}
-            />
-            <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
-          </Suspense>
-      </Canvas>
-    </>
-  )
+    <DatGui data={guiData} onUpdate={setGuiData}>
+      <DatBoolean path='showHelpers' label='Show Helpers' />
+      <DatString path='activeObject' label='Active Object' />
+    </DatGui>
+    {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
+    <Canvas camera={{ position: [0, 0, 15] }}>
+      <ambientLight intensity={.3} />
+      <PointLightWithHelper
+        visible={guiData.showHelpers}
+        color={0xffffff}
+        intensity={1}
+        position={[100, 50, 50]}
+        />
+      {guiData.showHelpers && <>
+        <gridHelper args={[1000, 100]}/>
+        <axesHelper args={[500]} />
+      </>}
+      <CameraControls />
+      <BoxSpring position={[0, 7, 0]} />
+      <Suspense fallback={<Box position={[0, 0, 0]} />}>
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="अपराध दर"
+          color="yellow"
+          position={[14, 2.75, 0]}/>
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="गरीबी"
+          color="green"
+          position={[13, 0, 0]}/>
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="साक्षरता"
+          color="blue"
+          position={[14, 5, 0]}/>
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="जनसंख्या"
+          color="red"
+          position={[12, 7, 0]}
+          // rotation={[0, -.2, 0]}
+        />
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="क्षेत्र"
+          color="orange"
+          position={[12, -6, 0]}
+        />
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="वन क्षेत्र"
+          color="purple"
+          position={[12, -9, 0]}
+        />
+        <Text3DHindi
+          fontUrl="assets/fonts/NotoSans-Regular.ttf"
+          text="लिंग अनुपात"
+          color="yellowgreen"
+          position={[12, -3, 0]}
+        />
+        <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+      </Suspense>
+    </Canvas>
+  </>)
 }
