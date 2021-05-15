@@ -1,2 +1,2 @@
-## r3f-starter
-This is a boilerplate for a basic react+threejs scene, using react-three-fiber
+## india-3d
+A 3D visualization of statewise parameters for my homeland. 😄 🇮🇳
