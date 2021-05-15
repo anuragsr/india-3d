@@ -14,3 +14,5 @@ body,
 body {
   background: #222;
 }
+
+.react-dat-gui{ z-index: 1; }

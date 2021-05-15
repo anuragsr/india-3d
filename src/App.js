@@ -3,6 +3,11 @@ import { extend, Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as THREE from 'three'
 
+// Debug
+import DatGui, { DatBoolean, DatString } from 'react-dat-gui'
+import 'react-dat-gui/dist/index.css'
+import FPSStats from 'react-fps-stats'
+
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 
@@ -34,7 +39,6 @@ const CameraControls = () => {
     controls.current.enablePan = false;
     controls.current.enableKeys = false;
   }
-
   // inspect()
 
   // Ref to the controls, so that we can update them on every frame using useFrame
@@ -69,17 +73,42 @@ const CameraControls = () => {
     </mesh>
   )
 }
+, PointLightWithHelper = ({ color, position, visible, intensity }) => {
+  const lightProps = { color, position, intensity }
+  return (
+    <pointLight {...lightProps}>
+      <mesh visible={visible}>
+        <sphereBufferGeometry/>
+        <meshStandardMaterial color={0x0000ff} />
+      </mesh>
+    </pointLight>
+  )
+}
 
 export default function App() {
-  return (
-    <Canvas>
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />
-      <gridHelper args={[1000, 100]}/>
-      <axesHelper args={[500]} /> 
-      <CameraControls />
-      <Box position={[0, 0, 0]} />
-    </Canvas>
+  const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
+  return (<>
+      <DatGui data={guiData} onUpdate={setGuiData}>
+        <DatBoolean path='showHelpers' label='Show Helpers' />
+        <DatString path='activeObject' label='Active Object' />
+      </DatGui>
+      {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
+      <Canvas>
+        <ambientLight intensity={0.5} />
+        <PointLightWithHelper 
+          visible={guiData.showHelpers} 
+          color={0xffffff} 
+          intensity={1}
+          position={[70, 50, 5]}/>
+        {guiData.showHelpers && <>
+          <gridHelper args={[1000, 100]}/>
+          <axesHelper args={[500]} /> 
+        </>}
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+        <pointLight position={[-10, -10, -10]} />
+        <CameraControls />
+        <Box position={[0, 0, 0]} />
+      </Canvas>
+    </>
   )
 }
