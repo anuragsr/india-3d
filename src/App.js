@@ -1,8 +1,8 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react'
+import React, { useRef, useState, useEffect, Suspense, setGlobal, useGlobal } from 'reactn'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { a, useSpring } from '@react-spring/three'
+import { animated, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
 
 import StatesData from './helpers/indiaStatesObj'
@@ -16,6 +16,9 @@ import { l } from './helpers'
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
+
+setGlobal({ a: false, b: true, c: false })
+
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
   // We need these to setup the OrbitControls component.
@@ -79,14 +82,11 @@ const CameraControls = () => {
     </mesh>
   )
 }
-, BoxSpring = ({ position }) => {
-  const [active, setActive] = useState(false)
-  const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-  // react-spring is a animation library that turns static values into animated springs
-  // const { spring } = useSpring({ spring: Number(active), config })
-  // const colorS = spring.to([0, 1], ['#6246ea', '#e45858'])
-
-  const props = useSpring({
+, BoxSpring = ({ position, label }) => {
+  const [aVal, setaVal] = useGlobal(label)
+  // const [active, setActive] = useState(false)
+  , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  , props = useSpring({
     from: {
       color: new THREE.Color("hsl(195, 100%, 10%)"),
       scale: 2,
@@ -98,29 +98,23 @@ const CameraControls = () => {
       rotationY: Math.PI
     },
     reset: true,
-    reverse: active,
+    reverse: aVal,
     config
     // delay: 200,
     // config: config.molasses,
     // onRest: () => setActive(!active),
   })
 
-
   return (
-    <a.mesh
+    <animated.mesh
       position={position}
       scale={props.scale}
       rotation-y={props.rotationY}
-      // scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
-      onClick={(e) => setActive(!active)}
-      // onPointerOver={(e) => setHover(true)}
-      // onPointerOut={(e) => setHover(false)}
+      // onClick={(e) => setActive(!active)}
       >
       <boxBufferGeometry args={[1, 1, 1]} />
-      {/*<meshStandardMaterial color={hovered ? 'hotpink' : 'green'} />*/}
-      {/*<meshStandardMaterialcolor={colorS} />*/}
-      <a.meshStandardMaterial transparent color={props.color} />
-    </a.mesh>
+      <animated.meshStandardMaterial transparent color={props.color} />
+    </animated.mesh>
   )
 }
 , PointLightWithHelper = ({ color, position, visible, intensity }) => {
@@ -153,49 +147,72 @@ const CameraControls = () => {
   //   const y = (mouse.y * viewport.height) / 300
   //   ref.current && ref.current.rotation.set(-y, x, 0)
   // })
+
+  return (
+    <group name={name} position={position}>
+      {gltf.scene.children.map((child, idx) => (
+        <StateSingleN key={idx} {...child}/>
+      ))}
+    </group>
+  )
+}
+, StateSingle = child => {
   const [active, setActive] = useState(false)
-  const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-  const props = useSpring({
+  , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  , { color, scaleY } = useSpring({
     from: {
-      // color: new THREE.Color("hsl(195, 100%, 10%)"),
-      scale: 3,
-      scaleY: 300,
+      color: new THREE.Color("hsl(195, 100%, 20%)"),
+      scaleY: 1000,
     },
     to: {
-      // color: new THREE.Color("hsl(195, 100%, 90%)"),
-      scale: 2,
+      color: StatesData[child.name].color,
       scaleY: 2,
     },
     reset: true,
     reverse: active,
     config
-    // delay: 200,
-    // config: config.molasses,
-    // onRest: () => setActive(!active),
+    // , delay: 200
+    // , onRest: () => setActive(!active)
   })
 
-  {/*<group name={name} scale={[1, 1, 1]} position={position}>{gltf.scene.children.map((child, idx) => {*/}
   return (
-    <a.group
-      name={name} scale={props.scale} position={position}
-      // name={name} scale={[1, 1, 1]} position={position}
+    <animated.mesh { ...child }
       onClick={(e) => {l("click"); setActive(!active)}}
-      >{gltf.scene.children.map((child, idx) => {
-      return (
-        <a.mesh key={idx}
-          // onPointerOver={(e) => l("In", e.eventObject.name)}
-          // onPointerOut={(e) => l("Out", e.eventObject.name)}
-          { ...child }
-
-          position={position}
-          scale-y={props.scaleY}
-          >
-          <meshPhongMaterial side={THREE.DoubleSide}
-            color={StatesData[child.name] ?  StatesData[child.name].color : 0xfff000}
-            />
-        </a.mesh>
-      )})}
-    </a.group>
+      // onPointerOver={(e) => l("In", e.eventObject.name)}
+      // onPointerOut={(e) => l("Out", e.eventObject.name)}
+      scale-y={scaleY}>
+      <animated.meshPhongMaterial side={THREE.DoubleSide} color={color} />
+    </animated.mesh>
+  )
+}
+, StateSingleN = child => {
+  // const [active, setActive] = useState(false)
+  // , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  // , { color, scaleY } = useSpring({
+  //   from: {
+  //     color: new THREE.Color("hsl(195, 100%, 20%)"),
+  //     scaleY: 1000,
+  //   },
+  //   to: {
+  //     color: StatesData[child.name].color,
+  //     scaleY: 2,
+  //   },
+  //   reset: true,
+  //   reverse: active,
+  //   config
+  //   // , delay: 200
+  //   // , onRest: () => setActive(!active)
+  // })
+  const color = StatesData[child.name].color
+  return (
+    <mesh
+      // onClick={(e) => {l("click"); setActive(!active)}}
+      // onPointerOver={(e) => l("In", e.eventObject.name)}
+      // onPointerOut={(e) => l("Out", e.eventObject.name)}
+      // scale-y={scaleY}
+       { ...child }>
+      <meshPhongMaterial side={THREE.DoubleSide} color={color} />
+    </mesh>
   )
 }
 , Text3DHindi = ({ text, color, fontUrl, position, rotation }) => {
@@ -257,6 +274,17 @@ const CameraControls = () => {
 
 export default function App() {
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
+  // const { a, b, c} = useGlobal()
+  const [global, setGlobal] = useGlobal()
+  // , [aVal, setaVal] = useGlobal('a')
+  , setGlobalValue = val => {
+    // l(val, aVal)
+    // setGlobal(prev => ({ ...prev, aVal : !aVal }))
+    // setaVal(!aVal)
+
+    setGlobal({ [val]: !global[val] })
+  }
+
   return (<>
     <DatGui data={guiData} onUpdate={setGuiData}>
       <DatBoolean path='showHelpers' label='Show Helpers' />
@@ -276,9 +304,11 @@ export default function App() {
         <axesHelper args={[500]} />
       </>}
       <CameraControls />
-      <BoxSpring position={[0, 7, 0]} />
+      <BoxSpring label="a" position={[-10, 7, 0]} />
+      <BoxSpring label="b" position={[-10, 5, 0]} />
+      <BoxSpring label="c" position={[-10, 3, 0]} />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        <Text3DHindi
+        {/*<Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
           text="अपराध दर"
           color="yellow"
@@ -317,9 +347,14 @@ export default function App() {
           text="लिंग अनुपात"
           color="yellowgreen"
           position={[12, -3, 0]}
-        />
+        />*/}
         <States name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
+    <div className="ctn-btn">
+      <button onClick={() => setGlobalValue("a")}>a</button>
+      <button onClick={() => setGlobalValue("b")}>b</button>
+      <button onClick={() => setGlobalValue("c")}>c</button>
+    </div>
   </>)
 }
