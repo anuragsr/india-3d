@@ -1,4 +1,3 @@
-
 export default {
   AN: {
     area: 8249,

@@ -1,7 +1,4 @@
-* {
-  box-sizing: border-box;
-}
-
+* { box-sizing: border-box;}
 html,
 body,
 #root {
@@ -10,13 +7,17 @@ body,
   margin: 0;
   padding: 0;
 }
-
-body {
-  background: #000;
-}
+body { background: #000; }
 .react-dat-gui{ z-index: 1; }
 .ctn-btn{
   z-index: 1;
   position: absolute;
   top: 0; left: 0;
+  &.bottom{
+    top: unset; bottom: 0;
+    button{ width: unset; }
+  }
+  button{
+    width: 200px;
+  }
 }
