@@ -17,14 +17,15 @@ import { l, cl } from './helpers'
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 
-let extrude = {}, total = {
+let extrude = {}
+, total = {
   population: 0,
   area: 0,
   crimeRate: 0,
 }
 
 for(const state in StatesData){
-  extrude[state] = false
+  // extrude[state] = false
   total.population += StatesData[state].population
   total.area       += StatesData[state].area
   total.crimeRate  += StatesData[state].crimeRate
@@ -32,7 +33,7 @@ for(const state in StatesData){
   StatesData[state].currColor = {...StatesData[state].color}
   StatesData[state].currScale = 40
 }
-setGlobal(extrude)
+// setGlobal(extrude)
 
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
@@ -111,76 +112,87 @@ const CameraControls = () => {
 , States = ({ name, url, position, param }) => {
   const gltf = useLoader(GLTFLoader, url )
   // , stateArr = [
-    //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
-    //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
-    //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
-    //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
-    // ]
-    // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
-    // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+  //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
+  //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
+  //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
+  //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
+  // ]
+  // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
+  // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
 
     // viewport -> canvas in 3d units (meters)
     // const { viewport } = useThree()
     // , ref = useRef()
     // useFrame(({ mouse }) => {
-      //   const x = (mouse.x * viewport.width) / 300
-      //   const y = (mouse.y * viewport.height) / 300
-      //   ref.current && ref.current.rotation.set(-y, x, 0)
-      // })
-      return (
-        <group name={name} position={position}>{
-          gltf.scene.children.map((child, idx) => (
-            <StateSingle key={idx} param={param} {...child}/>
-          ))
-        }</group>
-      )
-    }
+    //   const x = (mouse.x * viewport.width) / 300
+    //   const y = (mouse.y * viewport.height) / 300
+    //   ref.current && ref.current.rotation.set(-y, x, 0)
+    // })
+    return (
+      <group name={name} position={position}>{
+        gltf.scene.children.map((child, idx) => (
+          <StateSingle key={idx} param={param} {...child}/>
+        ))
+      }</group>
+    )
+  }
 , StateSingle = child => {
   const label = child.name
-  , [v, set] = useGlobal(label)
+  // , [v, set] = useGlobal(label)
   , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-
-  let to, scaleY, color
   , from = {
     color: StatesData[label].currColor,
     scaleY: StatesData[label].currScale,
   }
+
+  let scaleY = 40, color = StatesData[label].color, to
+
   switch(child.param){
     case 'Population':
-      scaleY = StatesData[label].population / 100000
-      scaleY = scaleY < 40 ? 40 : scaleY
+      scaleY = Math.max(StatesData[label].population / 100000, 60)
       color = new THREE.Color(`hsl(195, 100%, ${Math.round(StatesData[label].population*100/total.population)}%)`)
-      to = { color, scaleY }
     break;
 
     case 'Area':
-      scaleY = StatesData[label].area / 250
-      scaleY = scaleY < 40 ? 40 : scaleY
+      scaleY = Math.max(StatesData[label].area / 250, 60)
       color = new THREE.Color(`hsl(55, 100%, ${Math.round(StatesData[label].area*100/total.area)}%)`)
-      to = { color, scaleY }
     break;
 
     case 'Crime':
-      scaleY = StatesData[label].crimeRate / 5
-      scaleY = scaleY < 40 ? 40 : scaleY
+      scaleY = Math.max(StatesData[label].crimeRate / 5, 60)
       color = new THREE.Color(`hsl(360, 100%, ${Math.round(StatesData[label].crimeRate*100/total.crimeRate)}%)`)
-      to = { color, scaleY }
     break;
 
-    default:
-      to = { color: StatesData[label].color, scaleY: 40 }
+    case 'Literacy':
+      scaleY = Math.max(StatesData[label].literacy * 15, 60)
+      color = new THREE.Color(`hsl(288, 80%, ${Math.round(100 - StatesData[label].literacy)}%)`)
     break;
+
+    case 'Poverty':
+      scaleY = Math.max(StatesData[label].poverty * 15, 60)
+      color = new THREE.Color(`hsl(28, 100%, ${Math.round(StatesData[label].poverty)}%)`)
+    break;
+
+    case 'Sex Ratio':
+      scaleY = Math.max(StatesData[label].sexRatio * .75, 60)
+      color = new THREE.Color(`hsl(239, 83%, ${102 - Math.min(Math.round(StatesData[label].sexRatio/10), 100)}%)`)
+    break;
+
+    case 'Forest':
+      scaleY = Math.max(StatesData[label].forest * 20, 60)
+      color = new THREE.Color(`hsl(124, 100%, ${100 - Math.round(StatesData[label].forest)}%)`)
+    break;
+
+    default:break;
   }
+  // l(label, color, scaleY)
 
-  l(label, color, scaleY)
-
-  const { color: colorVal, scaleY: scaleYVal } = useSpring({
-    from, to, config,
-    // reset: true,
-    // reverse: v,
-    // , delay: 200
-    // , onRest: () => setActive(!active)
-  })
+  to = { color, scaleY }
+  const { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
+  // reset: true,
+  // reverse: v,
+  // , delay: 200
+  // , onRest: () => setActive(!active)
 
   return (
     <animated.mesh { ...child }
@@ -250,21 +262,30 @@ const CameraControls = () => {
 }
 
 export default function App() {
-  cl()
-  l(total)
+  cl(); l(total)
 
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
   , [param, setParam] = useState(null)
   , [global, setGlobal] = useGlobal()
   , setGlobalValue = val => {
     // l(global[val])
-    if(val === "All"){
-      setGlobal(Object.keys(extrude).reduce((acc, key) => {acc[key] = true; return acc; }, {}))
-    } else if (val === "Norm"){
-      setGlobal(Object.keys(extrude).reduce((acc, key) => {acc[key] = false; return acc; }, {}))
-    }
-    else setGlobal({ [val]: !global[val] }) // For individual states
+    // if(val === "All") {
+    //   setGlobal(Object.keys(extrude).reduce((acc, key) => { acc[key] = true; return acc; }, {}))
+    // } else if (val === "Norm") {
+    //   setGlobal(Object.keys(extrude).reduce((acc, key) => { acc[key] = false; return acc; }, {}))
+    // }
+    // else setGlobal({ [val]: !global[val] }) // For individual states
   }
+
+  useEffect(() => {
+    new HttpService()
+    .get('https://api.covid19india.org/data.json')
+    .then(res => {
+      const data = res.data.statewise
+      data.shift()
+      l(StatesData, data)
+    })
+  }, [])
 
   return (<>
     <DatGui data={guiData} onUpdate={setGuiData}>
@@ -286,21 +307,24 @@ export default function App() {
       </>}
       <CameraControls />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        {/*<Text3DHindi
+        <Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
           text="अपराध दर"
           color="yellow"
-          position={[14, 2.75, 0]}/>
+          position={[14, 2.75, 0]}
+        />
         <Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
           text="गरीबी"
           color="green"
-          position={[13, 0, 0]}/>
+          position={[13, 0, 0]}
+        />
         <Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
           text="साक्षरता"
           color="blue"
-          position={[14, 5, 0]}/>
+          position={[14, 5, 0]}
+        />
         <Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
           text="जनसंख्या"
@@ -325,19 +349,22 @@ export default function App() {
           text="लिंग अनुपात"
           color="yellowgreen"
           position={[12, -3, 0]}
-        />*/}
+        />
         <States param={param} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
     {/*<div className="ctn-btn">{Object.keys(StatesData).map((label, i) => (<React.Fragment key={i}>
       <button label={label} onClick={() => setGlobalValue(label)}>{StatesData[label].state}</button><br/>
     </React.Fragment>))}</div>*/}
-
     <div className="ctn-btn bottom">
       <button onClick={() => { setParam("Population"); setGlobalValue("All"); }}>Population</button>
       <button onClick={() => { setParam("Area"); setGlobalValue("All"); }}>Area</button>
       <button onClick={() => { setParam("Crime"); setGlobalValue("All"); }}>Crime</button>
-      <button onClick={() => { setParam("Norm"); setGlobalValue("Norm"); }}>Normal</button>
+      <button onClick={() => { setParam("Literacy"); setGlobalValue("All"); }}>Literacy</button>
+      <button onClick={() => { setParam("Poverty"); setGlobalValue("All"); }}>Poverty</button>
+      <button onClick={() => { setParam("Sex Ratio"); setGlobalValue("All"); }}>Sex Ratio</button>
+      <button onClick={() => { setParam("Forest"); setGlobalValue("All"); }}>Forest</button>
+      <button onClick={() => { setParam(null); setGlobalValue("Norm"); }}>Normal</button>
     </div>
   </>)
 }
