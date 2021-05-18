@@ -12,22 +12,27 @@ import HttpService from './helpers/HttpService'
 import DatGui, { DatBoolean, DatString } from 'react-dat-gui'
 import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
-import { l } from './helpers'
+import { l, cl } from './helpers'
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
 
-// setGlobal({ 'AN': false, 'AP': true, 'AS': false })
-let extrude = {}, pop = 0, areaTot = 0
+let extrude = {}, total = {
+  population: 0,
+  area: 0,
+  crimeRate: 0,
+}
+
 for(const state in StatesData){
   extrude[state] = false
-  pop+=StatesData[state].population
-  areaTot+=StatesData[state].area
+  total.population += StatesData[state].population
+  total.area       += StatesData[state].area
+  total.crimeRate  += StatesData[state].crimeRate
+
+  StatesData[state].currColor = {...StatesData[state].color}
+  StatesData[state].currScale = 40
 }
-l(pop, areaTot)
-// setGlobal({ 'AP': true })
 setGlobal(extrude)
-// setGlobal({ param: 'Population' })
 
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
@@ -92,155 +97,87 @@ const CameraControls = () => {
     </mesh>
   )
 }
-, BoxSpring = ({ position, label }) => {
-  const [v, set] = useGlobal(label)
-  , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-  , props = useSpring({
-    from: {
-      color: new THREE.Color("hsl(195, 100%, 10%)"),
-      scale: 2,
-      rotationY: 0
-    },
-    to: {
-      color: new THREE.Color("hsl(195, 100%, 90%)"),
-      scale: 1,
-      rotationY: Math.PI
-    },
-    reset: true,
-    reverse: v,
-    config
-    // delay: 200,
-    // config: config.molasses,
-    // onRest: () => setActive(!active),
-  })
-
-  return (
-    <animated.mesh
-      position={position}
-      scale={props.scale}
-      rotation-y={props.rotationY}
-      onClick={(e) => set(!v)}
-      >
-      <boxBufferGeometry args={[1, 1, 1]} />
-      <animated.meshStandardMaterial transparent color={props.color} />
-    </animated.mesh>
-  )
-}
 , PointLightWithHelper = ({ color, position, visible, intensity }) => {
   const lightProps = { color, position, intensity }
   return (
     <pointLight {...lightProps}>
-      <mesh visible={visible}>
-        <sphereBufferGeometry/>
-        <meshStandardMaterial color={0x0000ff} />
-      </mesh>
+    <mesh visible={visible}>
+    <sphereBufferGeometry/>
+    <meshStandardMaterial color={0x0000ff} />
+    </mesh>
     </pointLight>
   )
 }
 , States = ({ name, url, position, param }) => {
   const gltf = useLoader(GLTFLoader, url )
   // , stateArr = [
-  //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
-  //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
-  //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
-  //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
-  // ]
-  // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
-  // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+    //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
+    //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
+    //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
+    //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
+    // ]
+    // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
+    // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
 
-  // viewport -> canvas in 3d units (meters)
-  // const { viewport } = useThree()
-  // , ref = useRef()
-  // useFrame(({ mouse }) => {
-  //   const x = (mouse.x * viewport.width) / 300
-  //   const y = (mouse.y * viewport.height) / 300
-  //   ref.current && ref.current.rotation.set(-y, x, 0)
-  // })
-
-  return (
-    <group name={name} position={position}>{
-      gltf.scene.children.map((child, idx) => (
-        <StateSingle key={idx} param={param} {...child}/>
-      ))
-    }</group>
-  )
-}
-, StateSingleTest = child => {
-  const [active, setActive] = useState(false)
-  , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
-  , { color, scaleY } = useSpring({
-    from: {
-      color: new THREE.Color("hsl(195, 100%, 20%)"),
-      scaleY: 1000,
-    },
-    to: {
-      color: StatesData[child.name].color,
-      scaleY: 2,
-    },
-    reset: true,
-    reverse: active,
-    config
-    // , delay: 200
-    // , onRest: () => setActive(!active)
-  })
-
-  return (
-    <animated.mesh { ...child }
-      onClick={(e) => {l("click"); setActive(!active)}}
-      // onPointerOver={(e) => l("In", e.eventObject.name)}
-      // onPointerOut={(e) => l("Out", e.eventObject.name)}
-      scale-y={scaleY}>
-      <animated.meshPhongMaterial side={THREE.DoubleSide} color={color} />
-    </animated.mesh>
-  )
-}
-, StateSingleNormal = child => (<mesh { ...child }><meshPhongMaterial side={THREE.DoubleSide} color={StatesData[child.name].color} /></mesh>)
+    // viewport -> canvas in 3d units (meters)
+    // const { viewport } = useThree()
+    // , ref = useRef()
+    // useFrame(({ mouse }) => {
+      //   const x = (mouse.x * viewport.width) / 300
+      //   const y = (mouse.y * viewport.height) / 300
+      //   ref.current && ref.current.rotation.set(-y, x, 0)
+      // })
+      return (
+        <group name={name} position={position}>{
+          gltf.scene.children.map((child, idx) => (
+            <StateSingle key={idx} param={param} {...child}/>
+          ))
+        }</group>
+      )
+    }
 , StateSingle = child => {
   const label = child.name
   , [v, set] = useGlobal(label)
   , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
 
-  let to, from
+  let to, scaleY, color
+  , from = {
+    color: StatesData[label].currColor,
+    scaleY: StatesData[label].currScale,
+  }
   switch(child.param){
     case 'Population':
-      to = {
-        color: StatesData[label].color,
-        scaleY: 40,
-      }
-      from = {
-        color: new THREE.Color(`hsl(195, 100%, ${Math.round(StatesData[label].population*100/pop)}%)`),
-        scaleY: StatesData[label].population / 100000,
-      }
+      scaleY = StatesData[label].population / 100000
+      scaleY = scaleY < 40 ? 40 : scaleY
+      color = new THREE.Color(`hsl(195, 100%, ${Math.round(StatesData[label].population*100/total.population)}%)`)
+      to = { color, scaleY }
     break;
 
     case 'Area':
-      to = {
-        color: StatesData[label].color,
-        scaleY: 40,
-      }
-      from = {
-        color: new THREE.Color(`hsl(75, 100%, ${Math.round(StatesData[label].area*100/areaTot)}%)`),
-        // color: new THREE.Color("hsl(35, 100%, 20%)"),
-        scaleY: StatesData[label].area / 500,
-      }
+      scaleY = StatesData[label].area / 250
+      scaleY = scaleY < 40 ? 40 : scaleY
+      color = new THREE.Color(`hsl(55, 100%, ${Math.round(StatesData[label].area*100/total.area)}%)`)
+      to = { color, scaleY }
+    break;
+
+    case 'Crime':
+      scaleY = StatesData[label].crimeRate / 5
+      scaleY = scaleY < 40 ? 40 : scaleY
+      color = new THREE.Color(`hsl(360, 100%, ${Math.round(StatesData[label].crimeRate*100/total.crimeRate)}%)`)
+      to = { color, scaleY }
     break;
 
     default:
-      // to = {
-      //   color: StatesData[label].color,
-      //   scaleY: 40,
-      // }
-      // from = {
-      //   color: StatesData[label].color,
-      //   scaleY: 40,
-      // }
+      to = { color: StatesData[label].color, scaleY: 40 }
     break;
   }
 
-  const { color, scaleY } = useSpring({
+  l(label, color, scaleY)
+
+  const { color: colorVal, scaleY: scaleYVal } = useSpring({
     from, to, config,
-    reset: true,
-    reverse: v,
+    // reset: true,
+    // reverse: v,
     // , delay: 200
     // , onRest: () => setActive(!active)
   })
@@ -250,8 +187,8 @@ const CameraControls = () => {
       // onClick={() => {set(!v); l(getGlobal())}}
       // onPointerOver={(e) => l("In", e.eventObject.name)}
       // onPointerOut={(e) => l("Out", e.eventObject.name)}
-      scale-y={scaleY}>
-      <animated.meshPhongMaterial side={THREE.DoubleSide} color={color} />
+      scale-y={scaleYVal}>
+      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />
     </animated.mesh>
   )
 }
@@ -313,8 +250,11 @@ const CameraControls = () => {
 }
 
 export default function App() {
+  cl()
+  l(total)
+
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
-  , [param, setParam] = useState("Population")
+  , [param, setParam] = useState(null)
   , [global, setGlobal] = useGlobal()
   , setGlobalValue = val => {
     // l(global[val])
@@ -323,7 +263,7 @@ export default function App() {
     } else if (val === "Norm"){
       setGlobal(Object.keys(extrude).reduce((acc, key) => {acc[key] = false; return acc; }, {}))
     }
-    else setGlobal({ [val]: !global[val] })
+    else setGlobal({ [val]: !global[val] }) // For individual states
   }
 
   return (<>
@@ -345,11 +285,6 @@ export default function App() {
         <axesHelper args={[500]} />
       </>}
       <CameraControls />
-      {/*{
-        ['AN', 'AP', 'AS'].map((label, i) => (
-          <BoxSpring label={label} position={[-10, i*2 + 1, 0]} key={i}/>
-        ))
-      }*/}
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
         {/*<Text3DHindi
           fontUrl="assets/fonts/NotoSans-Regular.ttf"
@@ -394,14 +329,15 @@ export default function App() {
         <States param={param} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
-    <div className="ctn-btn">{Object.keys(StatesData).map((label, i) => (<React.Fragment key={i}>
+    {/*<div className="ctn-btn">{Object.keys(StatesData).map((label, i) => (<React.Fragment key={i}>
       <button label={label} onClick={() => setGlobalValue(label)}>{StatesData[label].state}</button><br/>
-    </React.Fragment>))}</div>
+    </React.Fragment>))}</div>*/}
 
     <div className="ctn-btn bottom">
       <button onClick={() => { setParam("Population"); setGlobalValue("All"); }}>Population</button>
       <button onClick={() => { setParam("Area"); setGlobalValue("All"); }}>Area</button>
-      <button onClick={() => { setParam("Norm"); setGlobalValue("Norm"); }}>Norm</button>
+      <button onClick={() => { setParam("Crime"); setGlobalValue("All"); }}>Crime</button>
+      <button onClick={() => { setParam("Norm"); setGlobalValue("Norm"); }}>Normal</button>
     </div>
   </>)
 }
