@@ -111,31 +111,28 @@ const CameraControls = () => {
 }
 , States = ({ name, url, position, param }) => {
   const gltf = useLoader(GLTFLoader, url )
-  // , stateArr = [
-  //   "DL", "GA", "TR", "MZ", "MN", "NL", "ML", "AS", "AR", "AP",
-  //   "TN", "KL",  "KA", "TS", "OD" , "CG", "JH", "WB",
-  //   "UK", "HP", "JK", "MH", "LA", "DN", "DD", "PY", "AN", "LD",
-  //   "SK", "BR", "MP", "GJ", "RJ", "CH", "UP", "HR", "PB",
-  // ]
-  // scale={stateArr.includes(child.name) ? [10,20,10]: [10,10,10]}
-  // color={stateArr.includes(child.name) ? 0xfff000 : 0x000fff}
+  , ref = useRef()
+  , { viewport } = useThree() // viewport -> canvas in 3d units (meters)
 
-    // viewport -> canvas in 3d units (meters)
-    // const { viewport } = useThree()
-    // , ref = useRef()
-    // useFrame(({ mouse }) => {
-    //   const x = (mouse.x * viewport.width) / 300
-    //   const y = (mouse.y * viewport.height) / 300
-    //   ref.current && ref.current.rotation.set(-y, x, 0)
-    // })
-    return (
-      <group name={name} position={position}>{
-        gltf.scene.children.map((child, idx) => (
-          <StateSingle key={idx} param={param} {...child}/>
-        ))
-      }</group>
-    )
-  }
+  useFrame(({ mouse }) => {
+    const x = (mouse.x * viewport.width) / 200
+    , y = (mouse.y * viewport.height) / 200
+
+    if (ref.current) {
+      // ref.current.rotation.set(-y, x, 0)
+      ref.current.rotation.set(2*y, -2*x, 0)
+      ref.current.position.set(x*15, y*10, 0)
+    }
+  })
+
+  return (
+    <group ref={ref} name={name} position={position}>{
+      gltf.scene.children.map((child, idx) => (
+        <StateSingle key={idx} param={param} {...child}/>
+      ))
+    }</group>
+  )
+}
 , StateSingle = child => {
   const label = child.name
   , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
@@ -144,7 +141,7 @@ const CameraControls = () => {
     scaleY: StatesData[label].currScale,
   }
 
-  let scaleY = 40, color = StatesData[label].color, to
+  let scaleY = 40, color = StatesData[label].color
 
   switch(child.param){
     case 'Covid 19':
@@ -194,12 +191,8 @@ const CameraControls = () => {
   }
   // l(label, color, scaleY)
 
-  to = { color, scaleY }
-  const { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
-  // reset: true,
-  // reverse: v,
-  // , delay: 200
-  // , onRest: () => setActive(!active)
+  const to = { color, scaleY }
+  , { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
 
   return (
     <animated.mesh { ...child }
@@ -217,13 +210,13 @@ const CameraControls = () => {
     </animated.mesh>
   )
 }
-, Text3DHindi = ({ text, color, fontUrl, position, rotation, extrudeConfig }) => {
+, Text3DHindi = ({ text, color, extrudeConfig }) => {
   const [shapes, setShapes] = useState([])
   , [offset, setOffset] = useState(0)
   , geoRef = useRef(null)
 
   useEffect(() => {
-    harfbuzz.createFont(fontUrl, 150, font => {
+    harfbuzz.createFont("assets/fonts/NotoSans-Regular.ttf", 150, font => {
       const allCommands = harfbuzz.commands(font, text, 150, 0, 0)
       let shapes = []
       for(let i = 0; i < allCommands.length; i++) {
@@ -254,9 +247,9 @@ const CameraControls = () => {
 
   return (
     shapes.length ?
-    <group position={position} rotation={rotation} scale={.015}>
+    <group scale={.015}>
       <mesh
-        position={[offset, position.[1] + 60, 0]}
+        position={[offset, 60, 0]}
         rotation={[0, Math.PI * 2, 0]}
         scale={[1, -1, 1]}>
         <extrudeBufferGeometry ref={geoRef} args={[shapes, extrudeConfig]} />
@@ -265,8 +258,8 @@ const CameraControls = () => {
     </group> :  null
   )
 }
-, Text3D = ({ text, color, fontUrl, position, rotation, extrudeConfig }) => {
-  const font = useLoader(THREE.FontLoader, fontUrl)
+, Text3D = ({ text, color, extrudeConfig }) => {
+  const font = useLoader(THREE.FontLoader, "assets/fonts/Noto Sans_Regular.json")
   , config = useMemo(() => ({ font, ...extrudeConfig }), [font])
   , [offset, setOffset] = useState(0)
   , geoRef = useRef(null)
@@ -280,15 +273,15 @@ const CameraControls = () => {
   }, [geoRef])
 
   return (
-    <group position={position} rotation={rotation} scale={.008}>
-      <mesh position={[offset, position.[1] - 60, 0]}>
+    <group scale={.008}>
+      <mesh position={[offset, -60, 0]}>
         <textBufferGeometry ref={geoRef} args={[text, config]} />
         <meshPhongMaterial side={THREE.DoubleSide} color={color} />
       </mesh>
     </group>
   )
 }
-, TextGroup = ({ hin, eng, color, position }) => {
+, TextGroup = ({ visible, hin, eng, color, position }) => {
   const extrudeConfig = {
     steps: 1,
     amount: 10,
@@ -297,24 +290,28 @@ const CameraControls = () => {
     bevelSize: 1,
     bevelSegments: 1
   }
-  return(<>
-    <Text3DHindi
-      fontUrl="assets/fonts/NotoSans-Regular.ttf"
-      text={hin}
-      color={color}
-      position={position}
-      extrudeConfig={extrudeConfig}
-      // rotation={[0, -.2, 0]}
-    />
-    <Text3D
-      fontUrl="assets/fonts/Noto Sans_Regular.json"
-      text={eng}
-      color={color}
-      position={position}
-      extrudeConfig={extrudeConfig}
-      // rotation={[0, -.2, 0]}
-    />
-  </>)
+  , springConfig = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  , { rotationY } = useSpring({
+    from: { rotationY: Math.PI/2 },
+    to: { rotationY: 0 },
+    reset: true,
+    config: springConfig
+  })
+
+  return(
+    <animated.group position={position} visible={visible} rotation-y={rotationY}>
+      <Text3DHindi
+        text={hin}
+        color={color}
+        extrudeConfig={extrudeConfig}
+      />
+      <Text3D
+        text={eng}
+        color={color}
+        extrudeConfig={extrudeConfig}
+      />
+    </animated.group>
+  )
 }
 
 export default function App() {
@@ -368,18 +365,19 @@ export default function App() {
       </>}
       <CameraControls />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        <TextGroup hin="कोविड 19 केस" eng="Covid 19 Cases" color={new THREE.Color("hsl(16, 100%, 20%)")} position={[12, 7, 0]} />
-        {/*<TextGroup hin="जनसंख्या" eng="Population" color={new THREE.Color("hsl(195, 100%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="क्षेत्र" eng="Area" color={new THREE.Color("hsl(55, 100%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="अपराध दर" eng="Crime Rate" color={new THREE.Color("hsl(0, 100%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="साक्षरता" eng="Literacy" color={new THREE.Color("hsl(288, 80%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="गरीबी" eng="Poverty" color={new THREE.Color("hsl(28, 100%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="लिंग अनुपात" eng="Sex Ratio" color={new THREE.Color("hsl(239, 80%, 20%)")} position={[12, 7, 0]} />*/}
-        {/*<TextGroup hin="वन क्षेत्र" eng="Forest Cover" color={new THREE.Color("hsl(124, 100%, 20%)")} position={[12, 7, 0]} />*/}
+        <TextGroup visible={param === "Covid 19"} hin="कोविड 19 केस" eng="Covid 19 Cases" color={new THREE.Color("hsl(16, 100%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Population"} hin="जनसंख्या" eng="Population" color={new THREE.Color("hsl(195, 100%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Area"} hin="क्षेत्र" eng="Area" color={new THREE.Color("hsl(55, 100%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Crime"} hin="अपराध दर" eng="Crime Rate" color={new THREE.Color("hsl(0, 100%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Literacy"} hin="साक्षरता" eng="Literacy" color={new THREE.Color("hsl(288, 80%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Poverty"} hin="गरीबी" eng="Poverty" color={new THREE.Color("hsl(28, 100%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Sex Ratio"} hin="लिंग अनुपात" eng="Sex Ratio" color={new THREE.Color("hsl(239, 80%, 20%)")} position={[12, 7, 0]} />
+        <TextGroup visible={param === "Forest"} hin="वन क्षेत्र" eng="Forest Cover" color={new THREE.Color("hsl(124, 100%, 20%)")} position={[12, 7, 0]} />
         <States param={param} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
     <div className="ctn-btn bottom">
+      <button onClick={() => { setParam("Covid 19"); }}>Covid 19</button>
       <button onClick={() => { setParam("Population"); }}>Population</button>
       <button onClick={() => { setParam("Area"); }}>Area</button>
       <button onClick={() => { setParam("Crime"); }}>Crime</button>
@@ -387,7 +385,6 @@ export default function App() {
       <button onClick={() => { setParam("Poverty"); }}>Poverty</button>
       <button onClick={() => { setParam("Sex Ratio"); }}>Sex Ratio</button>
       <button onClick={() => { setParam("Forest"); }}>Forest</button>
-      <button onClick={() => { setParam("Covid 19"); }}>Covid 19</button>
       <button onClick={() => { setParam(null); }}>Normal</button>
     </div>
   </>)
