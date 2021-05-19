@@ -182,7 +182,7 @@ export default {
   JK: {
     area: 42241,
     crimeRate: 203,
-    forest: 0,
+    forest: 30,
     literacy: 58.01,
     population: 12267032,
     poverty: 20,
@@ -218,7 +218,7 @@ export default {
   LA: {
     area: 96701,
     crimeRate: 0,
-    forest: 0,
+    forest: 20,
     literacy: 50,
     population: 274000,
     poverty: 30,

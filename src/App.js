@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, Suspense, setGlobal, useGlobal, getGlobal } from 'reactn'
+import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -22,6 +22,7 @@ let extrude = {}
   population: 0,
   area: 0,
   crimeRate: 0,
+  cases: 0
 }
 
 for(const state in StatesData){
@@ -33,7 +34,6 @@ for(const state in StatesData){
   StatesData[state].currColor = {...StatesData[state].color}
   StatesData[state].currScale = 40
 }
-// setGlobal(extrude)
 
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
@@ -138,7 +138,6 @@ const CameraControls = () => {
   }
 , StateSingle = child => {
   const label = child.name
-  // , [v, set] = useGlobal(label)
   , config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
   , from = {
     color: StatesData[label].currColor,
@@ -148,6 +147,11 @@ const CameraControls = () => {
   let scaleY = 40, color = StatesData[label].color, to
 
   switch(child.param){
+    case 'Covid 19':
+      scaleY = Math.max(StatesData[label].cases / 5000, 60)
+      color = new THREE.Color(`hsl(16, 100%, ${Math.round(StatesData[label].cases*100/total.cases)}%)`)
+    break;
+
     case 'Population':
       scaleY = Math.max(StatesData[label].population / 100000, 60)
       color = new THREE.Color(`hsl(195, 100%, ${Math.round(StatesData[label].population*100/total.population)}%)`)
@@ -169,7 +173,7 @@ const CameraControls = () => {
     break;
 
     case 'Poverty':
-      scaleY = Math.max(StatesData[label].poverty * 15, 60)
+      scaleY = Math.max(StatesData[label].poverty * 30, 60)
       color = new THREE.Color(`hsl(28, 100%, ${Math.round(StatesData[label].poverty)}%)`)
     break;
 
@@ -180,7 +184,10 @@ const CameraControls = () => {
 
     case 'Forest':
       scaleY = Math.max(StatesData[label].forest * 20, 60)
-      color = new THREE.Color(`hsl(124, 100%, ${100 - Math.round(StatesData[label].forest)}%)`)
+      let perc = 95 - Math.round(StatesData[label].forest)
+      if(perc === 95) perc = 20
+      color = new THREE.Color(`hsl(124, 100%, ${perc}%)`)
+      // l(label, perc)
     break;
 
     default:break;
@@ -196,26 +203,24 @@ const CameraControls = () => {
 
   return (
     <animated.mesh { ...child }
-      // onClick={() => {set(!v); l(getGlobal())}}
-      // onPointerOver={(e) => l("In", e.eventObject.name)}
-      // onPointerOut={(e) => l("Out", e.eventObject.name)}
+      // onPointerOver={(e) => {
+      //   e.stopPropagation()
+      //   l("In", e.eventObject.name)
+      //   // StatesData[e.eventObject.name]
+      // }}
+      // onPointerOut={(e) => {
+      //   e.stopPropagation()
+      //   l("Out", e.eventObject.name)
+      // }}
       scale-y={scaleYVal}>
       <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />
     </animated.mesh>
   )
 }
-, Text3DHindi = ({ text, color, fontUrl, position, rotation }) => {
+, Text3DHindi = ({ text, color, fontUrl, position, rotation, extrudeConfig }) => {
   const [shapes, setShapes] = useState([])
   , [offset, setOffset] = useState(0)
   , geoRef = useRef(null)
-  , extrudeSettings = {
-    steps: 1,
-    amount: 10,
-    bevelEnabled: true,
-    bevelThickness: 1,
-    bevelSize: 1,
-    bevelSegments: 1
-  }
 
   useEffect(() => {
     harfbuzz.createFont(fontUrl, 150, font => {
@@ -251,14 +256,65 @@ const CameraControls = () => {
     shapes.length ?
     <group position={position} rotation={rotation} scale={.015}>
       <mesh
-        position={[offset, 0, 0]}
+        position={[offset, position.[1] + 60, 0]}
         rotation={[0, Math.PI * 2, 0]}
         scale={[1, -1, 1]}>
-        <extrudeBufferGeometry ref={geoRef} args={[shapes, extrudeSettings]} />
+        <extrudeBufferGeometry ref={geoRef} args={[shapes, extrudeConfig]} />
         <meshPhongMaterial side={THREE.DoubleSide} color={color} />
       </mesh>
     </group> :  null
   )
+}
+, Text3D = ({ text, color, fontUrl, position, rotation, extrudeConfig }) => {
+  const font = useLoader(THREE.FontLoader, fontUrl)
+  , config = useMemo(() => ({ font, ...extrudeConfig }), [font])
+  , [offset, setOffset] = useState(0)
+  , geoRef = useRef(null)
+
+  useEffect(() => {
+    const geo = geoRef.current
+    if(geo){
+      geo.computeBoundingBox()
+      setOffset(-0.5 * ( geo.boundingBox.max.x - geo.boundingBox.min.x ))
+    }
+  }, [geoRef])
+
+  return (
+    <group position={position} rotation={rotation} scale={.008}>
+      <mesh position={[offset, position.[1] - 60, 0]}>
+        <textBufferGeometry ref={geoRef} args={[text, config]} />
+        <meshPhongMaterial side={THREE.DoubleSide} color={color} />
+      </mesh>
+    </group>
+  )
+}
+, TextGroup = ({ hin, eng, color, position }) => {
+  const extrudeConfig = {
+    steps: 1,
+    amount: 10,
+    bevelEnabled: true,
+    bevelThickness: 1,
+    bevelSize: 1,
+    bevelSegments: 1
+  }
+  return(<>
+    <Text3DHindi
+      fontUrl="assets/fonts/NotoSans-Regular.ttf"
+      text={hin}
+      color={color}
+      position={position}
+      extrudeConfig={extrudeConfig}
+      // rotation={[0, -.2, 0]}
+    />
+    <Text3D
+      fontUrl="assets/fonts/Noto Sans_Regular.json"
+      text={eng}
+      color={color}
+      position={position}
+      extrudeConfig={extrudeConfig}
+      // rotation={[0, -.2, 0]}
+    />
+  </>)
 }
 
 export default function App() {
@@ -266,24 +322,29 @@ export default function App() {
 
   const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
   , [param, setParam] = useState(null)
-  , [global, setGlobal] = useGlobal()
-  , setGlobalValue = val => {
-    // l(global[val])
-    // if(val === "All") {
-    //   setGlobal(Object.keys(extrude).reduce((acc, key) => { acc[key] = true; return acc; }, {}))
-    // } else if (val === "Norm") {
-    //   setGlobal(Object.keys(extrude).reduce((acc, key) => { acc[key] = false; return acc; }, {}))
-    // }
-    // else setGlobal({ [val]: !global[val] }) // For individual states
-  }
 
   useEffect(() => {
     new HttpService()
     .get('https://api.covid19india.org/data.json')
     .then(res => {
       const data = res.data.statewise
+      total.cases = parseInt(data[0].confirmed)
+
       data.shift()
-      l(StatesData, data)
+      // l(data)
+      data.forEach((item, i) => {
+        // l(item.statecode)
+        if(item.statecode === "CT") item.statecode = "CG"
+        else if(item.statecode === "OR") item.statecode = "OD"
+        else if(item.statecode === "UN") item.statecode = "UK"
+        else if(item.statecode === "TG") item.statecode = "TS"
+
+        if(item.statecode !== "UT"){
+          StatesData[item.statecode].cases = parseInt(item.confirmed)
+          StatesData[item.statecode].covidData = item
+        }
+      })
+      // l(StatesData)
     })
   }, [])
 
@@ -307,64 +368,27 @@ export default function App() {
       </>}
       <CameraControls />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="अपराध दर"
-          color="yellow"
-          position={[14, 2.75, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="गरीबी"
-          color="green"
-          position={[13, 0, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="साक्षरता"
-          color="blue"
-          position={[14, 5, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="जनसंख्या"
-          color="red"
-          position={[12, 7, 0]}
-          // rotation={[0, -.2, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="क्षेत्र"
-          color="orange"
-          position={[12, -6, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="वन क्षेत्र"
-          color="purple"
-          position={[12, -9, 0]}
-        />
-        <Text3DHindi
-          fontUrl="assets/fonts/NotoSans-Regular.ttf"
-          text="लिंग अनुपात"
-          color="yellowgreen"
-          position={[12, -3, 0]}
-        />
+        <TextGroup hin="कोविड 19 केस" eng="Covid 19 Cases" color={new THREE.Color("hsl(16, 100%, 20%)")} position={[12, 7, 0]} />
+        {/*<TextGroup hin="जनसंख्या" eng="Population" color={new THREE.Color("hsl(195, 100%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="क्षेत्र" eng="Area" color={new THREE.Color("hsl(55, 100%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="अपराध दर" eng="Crime Rate" color={new THREE.Color("hsl(0, 100%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="साक्षरता" eng="Literacy" color={new THREE.Color("hsl(288, 80%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="गरीबी" eng="Poverty" color={new THREE.Color("hsl(28, 100%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="लिंग अनुपात" eng="Sex Ratio" color={new THREE.Color("hsl(239, 80%, 20%)")} position={[12, 7, 0]} />*/}
+        {/*<TextGroup hin="वन क्षेत्र" eng="Forest Cover" color={new THREE.Color("hsl(124, 100%, 20%)")} position={[12, 7, 0]} />*/}
         <States param={param} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
-    {/*<div className="ctn-btn">{Object.keys(StatesData).map((label, i) => (<React.Fragment key={i}>
-      <button label={label} onClick={() => setGlobalValue(label)}>{StatesData[label].state}</button><br/>
-    </React.Fragment>))}</div>*/}
     <div className="ctn-btn bottom">
-      <button onClick={() => { setParam("Population"); setGlobalValue("All"); }}>Population</button>
-      <button onClick={() => { setParam("Area"); setGlobalValue("All"); }}>Area</button>
-      <button onClick={() => { setParam("Crime"); setGlobalValue("All"); }}>Crime</button>
-      <button onClick={() => { setParam("Literacy"); setGlobalValue("All"); }}>Literacy</button>
-      <button onClick={() => { setParam("Poverty"); setGlobalValue("All"); }}>Poverty</button>
-      <button onClick={() => { setParam("Sex Ratio"); setGlobalValue("All"); }}>Sex Ratio</button>
-      <button onClick={() => { setParam("Forest"); setGlobalValue("All"); }}>Forest</button>
-      <button onClick={() => { setParam(null); setGlobalValue("Norm"); }}>Normal</button>
+      <button onClick={() => { setParam("Population"); }}>Population</button>
+      <button onClick={() => { setParam("Area"); }}>Area</button>
+      <button onClick={() => { setParam("Crime"); }}>Crime</button>
+      <button onClick={() => { setParam("Literacy"); }}>Literacy</button>
+      <button onClick={() => { setParam("Poverty"); }}>Poverty</button>
+      <button onClick={() => { setParam("Sex Ratio"); }}>Sex Ratio</button>
+      <button onClick={() => { setParam("Forest"); }}>Forest</button>
+      <button onClick={() => { setParam("Covid 19"); }}>Covid 19</button>
+      <button onClick={() => { setParam(null); }}>Normal</button>
     </div>
   </>)
 }
