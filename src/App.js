@@ -9,7 +9,7 @@ import StatesData from './helpers/indiaStatesObj'
 import HttpService from './helpers/HttpService'
 
 // Debug
-import DatGui, { DatBoolean, DatString, DatButton } from 'react-dat-gui'
+import DatGui, { DatBoolean, DatFolder, DatButton } from 'react-dat-gui'
 import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
 import { l, cl } from './helpers'
@@ -117,7 +117,7 @@ const CameraControls = () => {
     </pointLight>
   )
 }
-, States = ({ name, url, position, param }) => {
+, States = ({ name, url, position, filter }) => {
   const gltf = useLoader(GLTFLoader, url )
   , ref = useRef()
   , { viewport } = useThree() // viewport -> canvas in 3d units (meters)
@@ -136,7 +136,7 @@ const CameraControls = () => {
   return (
     <group ref={ref} name={name} position={position}>{
       gltf.scene.children.map((child, idx) => (
-        <StateSingle key={idx} param={param} {...child}/>
+        <StateSingle key={idx} filter={filter} {...child}/>
       ))
     }</group>
   )
@@ -151,7 +151,7 @@ const CameraControls = () => {
 
   let scaleY = 40, color = StatesData[label].color
 
-  switch(child.param){
+  switch(child.filter.name){
     case 'Covid 19 Cases':
       scaleY = Math.max(StatesData[label].cases / 5000, 60)
       color = new THREE.Color(`hsl(16, 100%, ${Math.round(StatesData[label].cases*100/total.cases)}%)`)
@@ -322,7 +322,9 @@ const CameraControls = () => {
   )
 }
 , CanvasGroup = props => {
-  const { guiData, param } = props
+  const { guiData, filter } = props
+  , position = [12, 7, 0]
+
   return (
     <Canvas camera={{ position: [0, 0, 20] }} {...props}>
       <ambientLight intensity={.3} />
@@ -338,43 +340,45 @@ const CameraControls = () => {
       </>}
       <CameraControls />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        <TextGroup visible={param === "Covid 19 Cases"} hin="कोविड 19 केस" eng="Covid 19 Cases" color={new THREE.Color("hsl(16, 100%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Population"} hin="जनसंख्या" eng="Population" color={new THREE.Color("hsl(195, 100%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Area"} hin="क्षेत्र" eng="Area" color={new THREE.Color("hsl(55, 100%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Crime"} hin="अपराध दर" eng="Crime Rate" color={new THREE.Color("hsl(0, 100%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Literacy"} hin="साक्षरता" eng="Literacy" color={new THREE.Color("hsl(288, 80%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Poverty"} hin="गरीबी" eng="Poverty" color={new THREE.Color("hsl(28, 100%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Sex Ratio"} hin="लिंग अनुपात" eng="Sex Ratio" color={new THREE.Color("hsl(239, 80%, 20%)")} position={[12, 7, 0]} />
-        <TextGroup visible={param === "Forest Cover"} hin="वन क्षेत्र" eng="Forest Cover" color={new THREE.Color("hsl(124, 100%, 20%)")} position={[12, 7, 0]} />
-        <States param={param} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+        {filters.map((item, i) => (
+          <TextGroup visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
+        ))}
+        <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
       </Suspense>
     </Canvas>
   )
 }
-, Table = ({ param, data }) => {
-  l(data)
-  return (
-    <div>{param}</div>
-  )
+, Table = ({ filter, data }) => {
+  // l(data)
+  return (<>{ filter.name !== "" ?
+    <div className="ctn-table">
+      <div>{filter.name} {filter.hin}</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  : null }</>)
 }
 
 export default function App() {
   cl(); l(total)
 
-  const [guiData, setGuiData] = useState({ activeObject: "None", showHelpers: true })
-  , [param, setParam] = useState(null)
+  const [guiData, setGuiData] = useState({ showHelpers: true })
+  , [filter, setFilter] = useState({ name: "" })
   , [camera, setCamera] = useState(null)
-  , getStateData = type => {
-    return Object.entries(StatesData).sort((a, b) => {
-      let field = ""
-
-      switch(type){
-        case 'C': break;
-      }
-
-      return -1
-    })
-  }
+  , getStateData = type => Object.entries(StatesData).sort((a, b) => {
+    let field = ""
+    switch(type){
+      case 'Covid 19 Cases':  field = "cases";      break;
+      case 'Population':      field = "population"; break;
+      case 'Area':            field = "area";       break;
+      case 'Crime Rate':      field = "crimeRate";  break;
+      case 'Literacy':        field = "literacy";   break;
+      case 'Poverty':         field = "poverty";    break;
+      case 'Sex Ratio':       field = "sexRatio";   break;
+      case 'Forest Cover':    field = "forest";     break;
+      default:                field = "Rank";       break;
+    }
+    return a[1][field] < b[1][field] ? 1 : -1
+  })
 
   useEffect(() => {
     new HttpService()
@@ -404,29 +408,13 @@ export default function App() {
   return (<>
     <DatGui data={guiData} onUpdate={setGuiData}>
       <DatBoolean path='showHelpers' label='Show Helpers' />
-      <DatString path='activeObject' label='Active Object' />
+      <DatFolder title='Filters' closed={false}>
+        {filters.map((filter, i) => ( <DatButton label={filter.name} onClick={() => { setFilter(filter) }} /> ))}
+        <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
+      </DatFolder>
     </DatGui>
     {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
-    <CanvasGroup guiData={guiData} param={param} onCreated={({ camera }) => setCamera(camera)}/>
-    <div className="ctn-table">
-      {param !== null && <Table param={param} data={getStateData(param)} />}
-      <pre>{JSON.stringify(Object.entries(StatesData), null, 2)}</pre>
-    </div>
-    <div className="ctn-btn">
-      <button onClick={() => { setParam("Covid 19 Cases"); }}>Covid 19</button>
-      <button onClick={() => { setParam("Population"); }}>Population</button>
-      <button onClick={() => { setParam("Area"); }}>Area</button>
-      <button onClick={() => { setParam("Crime Rate"); }}>Crime</button>
-      <button onClick={() => { setParam("Literacy"); }}>Literacy</button>
-      <button onClick={() => { setParam("Poverty"); }}>Poverty</button>
-      <button onClick={() => { setParam("Sex Ratio"); }}>Sex Ratio</button>
-      <button onClick={() => { setParam("Forest Cover"); }}>Forest</button>
-      <button onClick={() => { setParam(null); }}>Normal</button>
-      {/*<button onClick={() => {
-        camera.position.set(0, 0, 0);
-        camera.rotation.set(0, 0, 0);
-        l(camera.quaternion)
-      }}>Reset Camera</button>*/}
-    </div>
+    <CanvasGroup guiData={guiData} filter={filter} onCreated={({ camera }) => setCamera(camera)}/>
+    <Table filter={filter} data={getStateData(filter.name)} />
   </>)
 }
