@@ -1,18 +1,19 @@
 import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { animated, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
 
-import StatesData from './helpers/indiaStatesObj'
-import HttpService from './helpers/HttpService'
+import StatesData from 'helpers/indiaStatesObj'
+import HttpService from 'helpers/HttpService'
 
 // Debug
 import DatGui, { DatBoolean, DatFolder, DatButton } from 'react-dat-gui'
 import 'react-dat-gui/dist/index.css'
 import FPSStats from 'react-fps-stats'
-import { l, cl } from './helpers'
+import { l, cl } from 'helpers'
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
@@ -324,9 +325,24 @@ const CameraControls = () => {
 , CanvasGroup = props => {
   const { guiData, filter } = props
   , position = [12, 7, 0]
+  , getStateData = type => Object.entries(StatesData).sort((a, b) => {
+    let field = ""
+    switch(type){
+      case 'Covid 19 Cases':  field = "cases";      break;
+      case 'Population':      field = "population"; break;
+      case 'Area':            field = "area";       break;
+      case 'Crime Rate':      field = "crimeRate";  break;
+      case 'Literacy':        field = "literacy";   break;
+      case 'Poverty':         field = "poverty";    break;
+      case 'Sex Ratio':       field = "sexRatio";   break;
+      case 'Forest Cover':    field = "forest";     break;
+      default:                field = "Rank";       break;
+    }
+    return a[1][field] < b[1][field] ? 1 : -1
+  })
 
   return (
-    <Canvas camera={{ position: [0, 0, 20] }} {...props}>
+    <Canvas className="ctn-canvas" camera={{ position: [0, 0, 18] }} {...props}>
       <ambientLight intensity={.3} />
       <PointLightWithHelper
         visible={guiData.showHelpers}
@@ -344,17 +360,53 @@ const CameraControls = () => {
           <TextGroup visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
         ))}
         <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+        <Table filter={filter} position={[12.5, -2, 0]} data={getStateData(filter.name)} />
       </Suspense>
     </Canvas>
   )
 }
-, Table = ({ filter, data }) => {
+, Table = ({ filter, position, data }) => {
   // l(data)
   return (<>{ filter.name !== "" ?
+  <Html
+    transform={true}
+    position={position}
+    >
     <div className="ctn-table">
-      <div>{filter.name} {filter.hin}</div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      {/*<div>{filter.hin} {filter.name}</div>*/}
+      <div className="t-title">
+        राज्य अनुसार सूची <span>State wise list</span>
+      </div>
+      <hr/><br/>
+      <div className="t-head">
+        <div style={{ width: 100 }}>राज्य<br/><span>State</span></div>
+        <div>पुष्टीकृत<br/><span>Confirmed</span></div>
+        <div>सक्रिय<br/><span>Active</span></div>
+        <div>स्वस्थ हुए<br/><span>Recovered</span></div>
+      </div>
+      {
+        data.map((item, i) => {
+          const state = item[1]
+          return (
+            <div className="t-row" key={i} style={{ backgroundColor: filter.color }}>
+              <div style={{ width: 100 }}>{state.state.hin}<br/><span>{state.state.eng}</span></div>
+              {state.covidData ? <>
+                <div><span>{state.covidData.confirmed}</span></div>
+                <div><span>{state.covidData.active}</span></div>
+                <div><span>{state.covidData.recovered}</span></div>
+              </> : <>
+                <div><span>N/A</span></div>
+                <div><span>N/A</span></div>
+                <div><span>N/A</span></div>
+              </>}
+            </div>
+          )
+        })
+      }
+      {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
     </div>
+  </Html>
+
   : null }</>)
 }
 
@@ -364,21 +416,6 @@ export default function App() {
   const [guiData, setGuiData] = useState({ showHelpers: true })
   , [filter, setFilter] = useState({ name: "" })
   , [camera, setCamera] = useState(null)
-  , getStateData = type => Object.entries(StatesData).sort((a, b) => {
-    let field = ""
-    switch(type){
-      case 'Covid 19 Cases':  field = "cases";      break;
-      case 'Population':      field = "population"; break;
-      case 'Area':            field = "area";       break;
-      case 'Crime Rate':      field = "crimeRate";  break;
-      case 'Literacy':        field = "literacy";   break;
-      case 'Poverty':         field = "poverty";    break;
-      case 'Sex Ratio':       field = "sexRatio";   break;
-      case 'Forest Cover':    field = "forest";     break;
-      default:                field = "Rank";       break;
-    }
-    return a[1][field] < b[1][field] ? 1 : -1
-  })
 
   useEffect(() => {
     new HttpService()
@@ -393,10 +430,10 @@ export default function App() {
         // l(item.statecode)
         if(item.statecode === "CT") item.statecode = "CG"
         else if(item.statecode === "OR") item.statecode = "OD"
-        else if(item.statecode === "UN") item.statecode = "UK"
+        else if(item.statecode === "UT") item.statecode = "UK"
         else if(item.statecode === "TG") item.statecode = "TS"
 
-        if(item.statecode !== "UT"){
+        if(item.statecode !== "UN"){
           StatesData[item.statecode].cases = parseInt(item.confirmed)
           StatesData[item.statecode].covidData = item
         }
@@ -413,8 +450,9 @@ export default function App() {
         <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
       </DatFolder>
     </DatGui>
-    {guiData.showHelpers && <FPSStats bottom={50} left={30} top={"unset"}/>}
+    {guiData.showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
+    {/*<div className="bg active"></div>*/}
+    <div className="bg"></div>
     <CanvasGroup guiData={guiData} filter={filter} onCreated={({ camera }) => setCamera(camera)}/>
-    <Table filter={filter} data={getStateData(filter.name)} />
   </>)
 }

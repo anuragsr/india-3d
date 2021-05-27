@@ -8,7 +8,14 @@ export default {
     poverty: 40,
     Rank: "UT6",
     sexRatio: 876,
-    state: "Andaman and Nicobar Islands",
+    state: {
+      eng: "Andaman and Nicobar Islands",
+      hin: "अंडमान एवं निकोबार",
+    },
+    capital: {
+      eng: "Port Blair",
+      hin: "पोर्ट ब्लेयर",
+    },
     color: 0xC92C48
   },
   AP: {
@@ -20,7 +27,14 @@ export default {
     poverty: 9.4,
     Rank: "10",
     sexRatio: 993,
-    state: "Andhra Pradesh",
+    state: {
+      eng: "Andhra Pradesh",
+      hin: "आंध्र प्रदेश",
+    },
+    capital: {
+      eng: "Hyderabad",
+      hin: "हैदराबाद",
+    },
     color: 0x469d67
   },
   AR: {
@@ -32,7 +46,14 @@ export default {
     poverty: 34.67,
     Rank: "26",
     sexRatio: 938,
-    state: "Arunachal Pradesh",
+    state: {
+      eng: "Arunachal Pradesh",
+      hin: "अरुणाचल प्रदेश",
+    },
+    capital: {
+      eng: "Itanagar",
+      hin: "ईटानगर",
+    },
     color: 0xE5F73A
   },
   AS: {
@@ -44,7 +65,14 @@ export default {
     poverty: 31.98,
     Rank: "15",
     sexRatio: 958,
-    state: "Assam",
+    state: {
+      eng: "Assam",
+      hin: "असम",
+    },
+    capital: {
+      eng: "Itanagar",
+      hin: "ईटानगर",
+    },
     color: 0xae1445
   },
   BR: {
@@ -56,7 +84,14 @@ export default {
     poverty: 33.571,
     Rank: "3",
     sexRatio: 918,
-    state: "Bihar",
+    state: {
+      eng: "Bihar",
+      hin: "बिहार",
+    },
+    capital: {
+      eng: "Patna",
+      hin: "पटना",
+    },
     color: 0x3023BE
   },
   CG: {
@@ -68,7 +103,14 @@ export default {
     poverty: 40,
     Rank: "17",
     sexRatio: 991,
-    state: "Chhattisgarh",
+    state: {
+      eng: "Chhattisgarh",
+      hin: "छत्तीसगढ़",
+    },
+    capital: {
+      eng: "Raipur",
+      hin: "रायपुर",
+    },
     color: 0xC6B946
   },
   CH: {
@@ -80,7 +122,14 @@ export default {
     poverty: 21.81,
     Rank: "UT4",
     sexRatio: 818,
-    state: "Chandigarh",
+    state: {
+      eng: "Chandigarh",
+      hin: "चंडीगढ़",
+    },
+    capital: {
+      eng: "Chandigarh",
+      hin: "चंडीगढ़",
+    },
     color: 0x76E3B4
   },
   DD: {
@@ -92,7 +141,14 @@ export default {
     poverty: 9.86,
     Rank: "UT1",
     sexRatio: 711,
-    state: "Daman and Diu",
+    state: {
+      eng: "Daman and Diu",
+      hin: "दमन और दीव",
+    },
+    capital: {
+      eng: "Daman",
+      hin: "दमन",
+    },
     color: 0x2B0CEC
   },
   DL: {
@@ -104,7 +160,14 @@ export default {
     poverty: 20,
     Rank: "29",
     sexRatio: 868,
-    state: "NCT of Delhi",
+    state: {
+      eng: "NCT of Delhi",
+      hin: "दिल्ली",
+    },
+    capital: {
+      eng: "New Delhi",
+      hin: "नई दिल्ली",
+    },
     color: 0xD1705F
   },
   DN: {
@@ -116,7 +179,14 @@ export default {
     poverty: 39.31,
     Rank: "UT5",
     sexRatio: 711,
-    state: "Dadra and Nagar Haveli",
+    state: {
+      eng: "Dadra and Nagar Haveli",
+      hin: "दादरा और नगर हवेली",
+    },
+    capital: {
+      eng: "Silvasa",
+      hin: "सिल्वासा",
+    },
     color: 0xACF787
   },
   GA: {
@@ -128,7 +198,15 @@ export default {
     poverty: 5.09,
     Rank: "25",
     sexRatio: 973,
-    state: "Goa",
+    state: "",
+    state: {
+      eng: "Goa",
+      hin: "गोवा",
+    },
+    capital: {
+      eng: "Panaji",
+      hin: "पणजी",
+    },
     color: 0xCADB74
   },
   GJ: {
@@ -140,7 +218,14 @@ export default {
     poverty: 16.63,
     Rank: "9",
     sexRatio: 919,
-    state: "Gujarat",
+    state: {
+      eng: "Gujarat",
+      hin: "गुजरात",
+    },
+    capital: {
+      eng: "Gandhinagar",
+      hin: "गांधीनगर",
+    },
     color: 0xCC54F9
   },
   HP: {
@@ -152,7 +237,14 @@ export default {
     poverty: 8.06,
     Rank: "20",
     sexRatio: 972,
-    state: "Himachal Pradesh",
+    state: {
+      eng: "Himachal Pradesh",
+      hin: "हिमाचल प्रदेश",
+    },
+    capital: {
+      eng: "Shimla",
+      hin: "शिमला",
+    },
     color: 0x455434
   },
   HR: {
@@ -164,7 +256,14 @@ export default {
     poverty: 11.16,
     Rank: "18",
     sexRatio: 879,
-    state: "Haryana",
+    state: {
+      eng: "Haryana",
+      hin: "हरियाणा",
+    },
+    capital: {
+      eng: "Chandigarh",
+      hin: "चंडीगढ़",
+    },
     color: 0x26951C
   },
   JH: {
@@ -176,7 +275,14 @@ export default {
     poverty: 36.96,
     Rank: "14",
     sexRatio: 948,
-    state: "Jharkhand",
+    state: {
+      eng: "Jharkhand",
+      hin: "झारखंड",
+    },
+    capital: {
+      eng: "Ranchi",
+      hin: "रांची",
+    },
     color: 0xD36920
   },
   JK: {
@@ -188,7 +294,14 @@ export default {
     poverty: 20,
     Rank: "UT2",
     sexRatio: 890,
-    state: "Jammu and Kashmir",
+    state: {
+      eng: "Jammu and Kashmir",
+      hin: "जम्मू और कश्मीर",
+    },
+    capital: {
+      eng: "Srinagar",
+      hin: "श्रीनगर",
+    },
     color: 0x185372
   },
   KA: {
@@ -200,7 +313,14 @@ export default {
     poverty: 20.91,
     Rank: "8",
     sexRatio: 973,
-    state: "Karnataka",
+    state: {
+      eng: "Karnataka",
+      hin: "कर्नाटक",
+    },
+    capital: {
+      eng: "Bengaluru",
+      hin: "बेंगलुरू",
+    },
     color: 0xF4869F
   },
   KL: {
@@ -212,7 +332,14 @@ export default {
     poverty: 7.05,
     Rank: "13",
     sexRatio: 1084,
-    state: "Kerala",
+    state: {
+      eng: "Kerala",
+      hin: "केरल",
+    },
+    capital: {
+      eng: "Thiruvananthapuram",
+      hin: "तिरुवनंतपुरम",
+    },
     color: 0xC66161
   },
   LA: {
@@ -224,7 +351,14 @@ export default {
     poverty: 30,
     Rank: "UT7",
     sexRatio: 853,
-    state: "Ladakh",
+    state: {
+      eng: "Ladakh",
+      hin: "लद्दाख",
+    },
+    capital: {
+      eng: "Ladakh",
+      hin: "लद्दाख",
+    },
     color: 0xd7a51d
   },
   LD: {
@@ -236,7 +370,14 @@ export default {
     poverty: 2.77,
     Rank: "UT8",
     sexRatio: 946,
-    state: "Lakshadweep",
+    state: {
+      eng: "Lakshadweep",
+      hin: "लक्षद्वीप",
+    },
+    capital: {
+      eng: "Kavaratti",
+      hin: "कावारत्ती",
+    },
     color: 0x10653A
   },
   MH: {
@@ -248,7 +389,14 @@ export default {
     poverty: 17.35,
     Rank: "2",
     sexRatio: 929,
-    state: "Maharashtra",
+    state: {
+      eng: "Maharashtra",
+      hin: "महाराष्ट्र",
+    },
+    capital: {
+      eng: "Mumbai",
+      hin: "मुम्बई",
+    },
     color: 0x4A44DC
   },
   ML: {
@@ -260,7 +408,14 @@ export default {
     poverty: 11.87,
     Rank: "22",
     sexRatio: 989,
-    state: "Meghalaya",
+    state: {
+      eng: "Meghalaya",
+      hin: "मेघालय",
+    },
+    capital: {
+      eng: "Shillong",
+      hin: "शिलांग",
+    },
     color: 0x13BFC4
   },
   MN: {
@@ -272,7 +427,15 @@ export default {
     poverty: 32.59,
     Rank: "23",
     sexRatio: 992,
-    state: "Manipur",
+    state: "",
+    state: {
+      eng: "Manipur",
+      hin: "मणिपुर",
+    },
+    capital: {
+      eng: "Imphal",
+      hin: "इम्फाल",
+    },
     color: 0x1F0289
   },
   MP: {
@@ -284,7 +447,14 @@ export default {
     poverty: 31.65,
     Rank: "5",
     sexRatio: 931,
-    state: "Madhya Pradesh",
+    state: {
+      eng: "Madhya Pradesh",
+      hin: "मध्य प्रदेश",
+    },
+    capital: {
+      eng: "Bhopal",
+      hin: "भोपाल",
+    },
     color: 0x4EC952
   },
   MZ: {
@@ -296,7 +466,14 @@ export default {
     poverty: 20.4,
     Rank: "27",
     sexRatio: 976,
-    state: "Mizoram",
+    state: {
+      eng: "Mizoram",
+      hin: "मिज़ोरम",
+    },
+    capital: {
+      eng: "Aizawl",
+      hin: "आइजोल",
+    },
     color: 0xF0AA4B
   },
   NL: {
@@ -308,7 +485,14 @@ export default {
     poverty: 18.88,
     Rank: "24",
     sexRatio: 931,
-    state: "Nagaland",
+    state: {
+      eng: "Nagaland",
+      hin: "नागालैंड",
+    },
+    capital: {
+      eng: "Nagaland",
+      hin: "कोहिमा",
+    },
     color: 0xEEB0CA
   },
   OD: {
@@ -320,7 +504,14 @@ export default {
     poverty: 36.89,
     Rank: "11",
     sexRatio: 979,
-    state: "Odisha",
+    state: {
+      eng: "Odisha",
+      hin: "ओडिशा",
+    },
+    capital: {
+      eng: "Bhubhaneshwar",
+      hin: "भुवनेश्वर",
+    },
     color: 0x6332AB
   },
   PB: {
@@ -332,7 +523,14 @@ export default {
     poverty: 8.26,
     Rank: "16",
     sexRatio: 895,
-    state: "Punjab",
+    state: {
+      eng: "Punjab",
+      hin: "पंजाब",
+    },
+    capital: {
+      eng: "Chandigarh",
+      hin: "चंडीगढ़",
+    },
     color: 0xd23a64
   },
   PY: {
@@ -344,7 +542,14 @@ export default {
     poverty: 9.69,
     Rank: "UT3",
     sexRatio: 1037,
-    state: "Puducherry",
+    state: {
+      eng: "Puducherry",
+      hin: "पुडुचेरी",
+    },
+    capital: {
+      eng: "Puducherry",
+      hin: "पुडुचेरी",
+    },
     color: 0x4B0B4A
   },
   RJ: {
@@ -356,7 +561,14 @@ export default {
     poverty: 14.71,
     Rank: "7",
     sexRatio: 928,
-    state: "Rajasthan",
+    state: {
+      eng: "Rajasthan",
+      hin: "राजस्थान",
+    },
+    capital: {
+      eng: "Jaipur",
+      hin: "जयपुर",
+    },
     color: 0x88EFE4
   },
   SK: {
@@ -368,7 +580,14 @@ export default {
     poverty: 8.19,
     Rank: "28",
     sexRatio: 890,
-    state: "Sikkim",
+    state: {
+      eng: "Sikkim",
+      hin: "सिक्किम",
+    },
+    capital: {
+      eng: "Gangtok",
+      hin: "गंगटोक",
+    },
     color: 0xE45F9F
   },
   TN: {
@@ -380,7 +599,14 @@ export default {
     poverty: 11.8,
     Rank: "6",
     sexRatio: 996,
-    state: "Tamil Nadu",
+    state: {
+      eng: "Tamil Nadu",
+      hin: "तमिल नाडू",
+    },
+    capital: {
+      eng: "Chennai",
+      hin: "चेन्नई",
+    },
     color: 0xEA8630
   },
   TR: {
@@ -392,7 +618,14 @@ export default {
     poverty: 14.05,
     Rank: "21",
     sexRatio: 960,
-    state: "Tripura",
+    state: {
+      eng: "Tripura",
+      hin: "त्रिपुरा",
+    },
+    capital: {
+      eng: "Agartala",
+      hin: "अगरतला",
+    },
     color: 0x869A08
   },
   TS: {
@@ -404,7 +637,14 @@ export default {
     poverty: 10,
     Rank: "12",
     sexRatio: 988,
-    state: "Telangana",
+    state: {
+      eng: "Telangana",
+      hin: "तेलंगाना",
+    },
+    capital: {
+      eng: "Hyderabad",
+      hin: "हैदराबाद",
+    },
     color: 0x0E90AB
   },
   UK: {
@@ -416,7 +656,14 @@ export default {
     poverty: 11.26,
     Rank: "19",
     sexRatio: 963,
-    state: "Uttarakhand",
+    state: {
+      eng: "Uttarakhand",
+      hin: "उत्तराखंड",
+    },
+    capital: {
+      eng: "Dehradun",
+      hin: "देहरादून",
+    },
     color: 0x377bfd
   },
   UP: {
@@ -428,7 +675,14 @@ export default {
     poverty: 31.01,
     Rank: "1",
     sexRatio: 912,
-    state: "Uttar Pradesh",
+    state: {
+      eng: "Uttar Pradesh",
+      hin: "उत्तर प्रदेश",
+    },
+    capital: {
+      eng: "Lucknow",
+      hin: "लखनऊ",
+    },
     color: 0xB51303
   },
   WB: {
@@ -440,7 +694,14 @@ export default {
     poverty: 19.98,
     Rank: "4",
     sexRatio: 953,
-    state: "West Bengal",
+    state: {
+      eng: "West Bengal",
+      hin: "पश्चिम बंगाल",
+    },
+    capital: {
+      eng: "Kolkata",
+      hin: "कोलकाता",
+    },
     color: 0x239001
   }
 }

@@ -1,4 +1,4 @@
-* { box-sizing: border-box;}
+* { box-sizing: border-box; }
 html,
 body,
 #root {
@@ -6,19 +6,70 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 body {
   background: #222;
   font-family: 'Noto Sans';
 }
-.react-dat-gui{ z-index: 1; }
-.ctn-table{
+
+.react-dat-gui{ z-index: 2; left: 16px; }
+.ctn-canvas{ z-index: 1; }
+.bg{
+  height: 100%;
+  width: 100%;
   position: absolute;
-  bottom: 2vh; right: 2vh;
-  outline: 1px solid #fff;
-  height: 50vh;
-  width: 25vw;
-  padding: 2vh;
-  overflow: scroll;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  background: url(../img/drk2.jpg) no-repeat center;
+  background-size: 250% 210%;
+  background-position: 62% 56%;
+  filter: blur(3px);
+  transition: background-position .5s;
+
+  background: #222;
+  &.active{
+    background-position: 74% 57%;
+  }
+}
+
+.ctn-table{
+  z-index: 2;
+  height: 500px;
+  width: 600px;
+  padding: 15px;
   color: #fff;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  /* background: rgba(#000, .9); */
+  box-shadow: 0px 0px 5px 1px rgba(#000, .9);
+  .t-title{
+    font-size: 34px;
+    span{ font-size: 22px; }
+  }
+  .t-head, .t-row{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    line-height: 30px;
+    font-size: 28px;
+    span{ font-size: 20px; }
+  }
+  .t-row{
+    margin: 10px 0;
+    padding: 5px 10px;
+    align-items: center;
+    box-shadow: 0px 0px 5px 1px rgba(#000, .9);    
+  }
+  &::-webkit-scrollbar { width: 7px; }
+  &::-webkit-scrollbar-track {
+    border-radius: 2px;
+    -webkit-box-shadow: inset 0 0 6px rgba(#fff, .3);
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: rgba(#fff, .3);
+    /* -webkit-box-shadow: inset 0 0 6px rgba(#fff, .5); */
+  }
 }
