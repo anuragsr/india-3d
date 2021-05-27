@@ -154,7 +154,7 @@ export default {
   DL: {
     area: 1484,
     crimeRate: 0,
-    forest: 0,
+    forest: 10.7,
     literacy: 80,
     population: 16787941,
     poverty: 20,

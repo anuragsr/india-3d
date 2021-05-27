@@ -368,46 +368,77 @@ const CameraControls = () => {
 , Table = ({ filter, position, data }) => {
   // l(data)
   return (<>{ filter.name !== "" ?
-  <Html
-    transform={true}
-    position={position}
-    >
-    <div className="ctn-table">
-      {/*<div>{filter.hin} {filter.name}</div>*/}
-      <div className="t-title">
-        राज्य अनुसार सूची <span>State wise list</span>
+    <Html transform={true} position={position}>
+      <div className="ctn-table">
+        <div className="t-title">राज्य अनुसार सूची <span>State wise list</span></div><hr/><br/>
+        <div className="t-head">
+          <div className="name"
+            style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
+            राज्य<br/><span>State</span></div>
+          <TableHead filter={filter}/>
+        </div>
+        {data.map((item, i) => (
+          <div key={i} className="t-row" style={{ backgroundColor: filter.color }}>
+            <div className="name"
+              style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
+              {item[1].state.hin}<br/><span>{item[1].state.eng}</span>
+            </div>
+            <TableRow filter={filter} state={item[1]}/>
+          </div>
+        ))}
+        {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
       </div>
-      <hr/><br/>
-      <div className="t-head">
-        <div style={{ width: 100 }}>राज्य<br/><span>State</span></div>
+    </Html>
+    : null
+  }</>)
+}
+, TableHead = ({ filter }) => {
+  let head = ""
+  switch (filter.name) {
+    case 'Covid 19 Cases':
+      head = <>
         <div>पुष्टीकृत<br/><span>Confirmed</span></div>
         <div>सक्रिय<br/><span>Active</span></div>
         <div>स्वस्थ हुए<br/><span>Recovered</span></div>
-      </div>
-      {
-        data.map((item, i) => {
-          const state = item[1]
-          return (
-            <div className="t-row" key={i} style={{ backgroundColor: filter.color }}>
-              <div style={{ width: 100 }}>{state.state.hin}<br/><span>{state.state.eng}</span></div>
-              {state.covidData ? <>
-                <div><span>{state.covidData.confirmed}</span></div>
-                <div><span>{state.covidData.active}</span></div>
-                <div><span>{state.covidData.recovered}</span></div>
-              </> : <>
-                <div><span>N/A</span></div>
-                <div><span>N/A</span></div>
-                <div><span>N/A</span></div>
-              </>}
-            </div>
-          )
-        })
-      }
-      {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
-    </div>
-  </Html>
+      </>
+    break;
+    case 'Area':          head = <div>{filter.hin} (वर्ग किमी)<br/><span>{filter.name} (km<sup>2</sup>)</span></div>; break;
+    case 'Crime Rate':    head = <div>रिपोर्ट किए गए अपराध<br/><span>Crimes Reported (2018)</span></div>; break;
+    case 'Literacy':
+    case 'Poverty':       head = <div>{filter.hin} (%)<br/><span>{filter.name} (%)</span></div>; break;
+    case 'Sex Ratio':     head = <div>महिलाएं प्रति 1000 पुरुष<br/><span>Females per 1000 Males</span></div>; break;
+    case 'Forest Cover':  head = <div>राज्य क्षेत्र का प्रतिशत<br/><span>Percent of State Area</span></div>; break;
+    default:              head = <div>{filter.hin}<br/><span>{filter.name}</span></div>; break;
+  }
 
-  : null }</>)
+  return head
+}
+, TableRow = ({ filter, state }) => {
+  const format = n => parseInt(n).toLocaleString('en-IN')
+  let row = ""
+
+  switch (filter.name) {
+    case 'Covid 19 Cases':
+      row = state.covidData ? <>
+          <div><span>{format(state.covidData.confirmed)}</span></div>
+          <div><span>{format(state.covidData.active)}</span></div>
+          <div><span>{format(state.covidData.recovered)}</span></div>
+        </> : <>
+          <div><span>N/A</span></div>
+          <div><span>N/A</span></div>
+          <div><span>N/A</span></div>
+        </>
+    break;
+    case 'Population':  row = <div><span>{format(state.population)}</span></div>; break;
+    case 'Area':        row = <div><span>{format(state.area)}</span></div>; break;
+    case 'Crime Rate':  row = <div><span>{state.crimeRate === 0 ? "N/A" : format(state.crimeRate)}</span></div>; break;
+    case 'Literacy':    row = <div><span>{state.literacy}</span></div>; break;
+    case 'Poverty':     row = <div><span>{state.poverty}</span></div>; break;
+    case 'Sex Ratio':   row = <div><span>{format(state.sexRatio)}</span></div>; break;
+    case 'Forest Cover':row = <div><span>{state.forest}</span></div>; break;
+    default:break;
+  }
+  return row
 }
 
 export default function App() {
@@ -452,7 +483,9 @@ export default function App() {
     </DatGui>
     {guiData.showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
     {/*<div className="bg active"></div>*/}
-    <div className="bg"></div>
+    <div className="bg">
+      <div className="cloud"></div>
+    </div>
     <CanvasGroup guiData={guiData} filter={filter} onCreated={({ camera }) => setCamera(camera)}/>
   </>)
 }
