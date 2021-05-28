@@ -34,6 +34,9 @@ const total = {
   { name: "Sex Ratio",      hin: "लिंग अनुपात",   color: "hsl(239, 80%, 20%)" },
   { name: "Forest Cover",   hin: "वन क्षेत्र",       color: "hsl(124, 100%, 20%)" },
 ]
+, rotYTable = -.25
+
+let currPos = 0, finalPos = -6
 
 for(const state in StatesData){
   total.population += StatesData[state].population
@@ -123,23 +126,28 @@ const CameraControls = () => {
   , ref = useRef()
   , { viewport } = useThree() // viewport -> canvas in 3d units (meters)
 
-  // useFrame(({ mouse }) => {
-  //   const x = (mouse.x * viewport.width) / 200
-  //   , y = (mouse.y * viewport.height) / 200
-  //
-  //   if (ref.current) {
-  //     ref.current.rotation.set(-y, x, 0)
-  //     // ref.current.rotation.set(2*y, -2*x, 0)
-  //     // ref.current.position.set(x*15, y*10, 0)
-  //   }
-  // })
+  if(!filter.name.length) currPos = -6, finalPos = 0
+  else currPos = 0, finalPos = -6
+
+  const from = { pos: currPos }
+  , to = { pos: finalPos }
+  , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
+  , { pos } = useSpring({ from, to, config })
+
+  useFrame(({ mouse }) => {
+    const x = (mouse.x * viewport.width) / 200
+    , y = (mouse.y * viewport.height) / 200
+
+    ref.current && ref.current.rotation.set(-y, x + .2, 0)
+  })
 
   return (
-    <group ref={ref} name={name} position={position}>{
+    <animated.group ref={ref} name={name}
+      position-x={pos}>{
       gltf.scene.children.map((child, idx) => (
         <StateSingle key={idx} filter={filter} {...child}/>
       ))
-    }</group>
+    }</animated.group>
   )
 }
 , StateSingle = child => {
@@ -301,14 +309,15 @@ const CameraControls = () => {
   }
   , springConfig = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
   , { rotationY } = useSpring({
-    from: { rotationY: Math.PI/2 },
-    to: { rotationY: 0 },
+    from: { rotationY: Math.PI/2 + rotYTable},
+    to: { rotationY: 0 + rotYTable},
     reset: true,
     config: springConfig
   })
 
-  return(
+  return (
     <animated.group position={position} visible={visible} rotation-y={rotationY}>
+      {/*<Html transform={true} position={[0, 0, -5]}><div className="ctn-text-bg"></div></Html>*/}
       <Text3DHindi
         text={hin}
         color={color}
@@ -322,75 +331,43 @@ const CameraControls = () => {
     </animated.group>
   )
 }
-, CanvasGroup = props => {
-  const { guiData, filter } = props
-  , position = [12, 7, 0]
-  , getStateData = type => Object.entries(StatesData).sort((a, b) => {
-    let field = ""
-    switch(type){
-      case 'Covid 19 Cases':  field = "cases";      break;
-      case 'Population':      field = "population"; break;
-      case 'Area':            field = "area";       break;
-      case 'Crime Rate':      field = "crimeRate";  break;
-      case 'Literacy':        field = "literacy";   break;
-      case 'Poverty':         field = "poverty";    break;
-      case 'Sex Ratio':       field = "sexRatio";   break;
-      case 'Forest Cover':    field = "forest";     break;
-      default:                field = "Rank";       break;
-    }
-    return a[1][field] < b[1][field] ? 1 : -1
-  })
-
-  return (
-    <Canvas className="ctn-canvas" camera={{ position: [0, 0, 18] }} {...props}>
-      <ambientLight intensity={.3} />
-      <PointLightWithHelper
-        visible={guiData.showHelpers}
-        color={0xffffff}
-        intensity={1}
-        position={[100, 50, 50]}
-      />
-      {guiData.showHelpers && <>
-        <gridHelper args={[1000, 100]}/>
-        <axesHelper args={[500]} />
-      </>}
-      <CameraControls />
-      <Suspense fallback={<Box position={[0, 0, 0]} />}>
-        {filters.map((item, i) => (
-          <TextGroup visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
-        ))}
-        <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
-        <Table filter={filter} position={[12.5, -2, 0]} data={getStateData(filter.name)} />
-      </Suspense>
-    </Canvas>
-  )
-}
 , Table = ({ filter, position, data }) => {
   // l(data)
-  return (<>{ filter.name !== "" ?
-    <Html transform={true} position={position}>
-      <div className="ctn-table">
-        <div className="t-title">राज्य अनुसार सूची <span>State wise list</span></div><hr/><br/>
-        <div className="t-head">
-          <div className="name"
-            style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
-            राज्य<br/><span>State</span></div>
-          <TableHead filter={filter}/>
-        </div>
-        {data.map((item, i) => (
-          <div key={i} className="t-row" style={{ backgroundColor: filter.color }}>
+  const config = { mass: 5, tension: 400, friction: 50, precision: 0.0001 }
+  , { rotationY } = useSpring({
+    from: { rotationY: Math.PI/2 + rotYTable },
+    to: { rotationY: 0 + rotYTable },
+    delay: 50,
+    reset: true,
+    config
+  })
+
+  // {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
+  return (
+    <animated.group position={position} rotation-y={rotationY}>
+      {filter.name !== "" ?
+      <Html transform={true}>
+        <div className="ctn-table">
+          <div className="t-title">राज्य अनुसार सूची <span>State wise list</span></div><hr/><br/>
+          <div className="t-head">
             <div className="name"
               style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
-              {item[1].state.hin}<br/><span>{item[1].state.eng}</span>
-            </div>
-            <TableRow filter={filter} state={item[1]}/>
+              राज्य<br/><span>State</span></div>
+            <TableHead filter={filter}/>
           </div>
-        ))}
-        {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
-      </div>
-    </Html>
-    : null
-  }</>)
+          {data.map((item, i) => (
+            <div key={i} className="t-row" style={{ backgroundColor: filter.color }}>
+              <div className="name"
+                style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
+                {item[1].state.hin}<br/><span>{item[1].state.eng}</span>
+              </div>
+              <TableRow filter={filter} state={item[1]}/>
+            </div>
+          ))}
+        </div>
+      </Html> : null}
+    </animated.group>
+  )
 }
 , TableHead = ({ filter }) => {
   let head = ""
@@ -406,7 +383,7 @@ const CameraControls = () => {
     case 'Crime Rate':    head = <div>रिपोर्ट किए गए अपराध<br/><span>Crimes Reported (2018)</span></div>; break;
     case 'Literacy':
     case 'Poverty':       head = <div>{filter.hin} (%)<br/><span>{filter.name} (%)</span></div>; break;
-    case 'Sex Ratio':     head = <div>महिलाएं प्रति 1000 पुरुष<br/><span>Females per 1000 Males</span></div>; break;
+    case 'Sex Ratio':     head = <div>महिलाएं प्रति 1,000 पुरुष<br/><span>Females per 1,000 Males</span></div>; break;
     case 'Forest Cover':  head = <div>राज्य क्षेत्र का प्रतिशत<br/><span>Percent of State Area</span></div>; break;
     default:              head = <div>{filter.hin}<br/><span>{filter.name}</span></div>; break;
   }
@@ -440,6 +417,41 @@ const CameraControls = () => {
   }
   return row
 }
+, CanvasGroup = props => {
+  const { guiData, filter } = props
+  , position = [12, 7, 0]
+  , getStateData = type => Object.entries(StatesData).sort((a, b) => {
+    let field = ""
+    switch(type){
+      case 'Covid 19 Cases':  field = "cases";      break;
+      case 'Population':      field = "population"; break;
+      case 'Area':            field = "area";       break;
+      case 'Crime Rate':      field = "crimeRate";  break;
+      case 'Literacy':        field = "literacy";   break;
+      case 'Poverty':         field = "poverty";    break;
+      case 'Sex Ratio':       field = "sexRatio";   break;
+      case 'Forest Cover':    field = "forest";     break;
+      default:                field = "Rank";       break;
+    }
+    return a[1][field] < b[1][field] ? 1 : -1
+  })
+
+  return (
+    <Canvas className="ctn-canvas" camera={{ position: [0, 0, 19] }} {...props}>
+      <ambientLight intensity={.3} />
+      <PointLightWithHelper visible={guiData.showHelpers} color={0xffffff} intensity={.4} position={[10, 50, 50]}/>
+      {guiData.showHelpers && <><gridHelper args={[1000, 100]}/><axesHelper args={[500]} /></>}
+      <CameraControls />
+      <Suspense fallback={<Box position={[0, 0, 0]} />}>
+        {filters.map((item, i) => (
+          <TextGroup key={i} visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
+        ))}
+        <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+        <Table filter={filter} position={[12.5, -2, 0]} data={getStateData(filter.name)} />
+      </Suspense>
+    </Canvas>
+  )
+}
 
 export default function App() {
   cl(); l(total)
@@ -447,6 +459,7 @@ export default function App() {
   const [guiData, setGuiData] = useState({ showHelpers: true })
   , [filter, setFilter] = useState({ name: "" })
   , [camera, setCamera] = useState(null)
+  , { showHelpers } = guiData
 
   useEffect(() => {
     new HttpService()
@@ -477,15 +490,12 @@ export default function App() {
     <DatGui data={guiData} onUpdate={setGuiData}>
       <DatBoolean path='showHelpers' label='Show Helpers' />
       <DatFolder title='Filters' closed={false}>
-        {filters.map((filter, i) => ( <DatButton label={filter.name} onClick={() => { setFilter(filter) }} /> ))}
+        {filters.map((filter, i) => ( <DatButton key={i} label={filter.name} onClick={() => { setFilter(filter) }} /> ))}
         <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
       </DatFolder>
     </DatGui>
-    {guiData.showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
-    {/*<div className="bg active"></div>*/}
-    <div className="bg">
-      <div className="cloud"></div>
-    </div>
-    <CanvasGroup guiData={guiData} filter={filter} onCreated={({ camera }) => setCamera(camera)}/>
+    {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
+    <div className={`bg ${filter.name.length ? "active" : ""}`}><div className="cloud"/></div>
+    <CanvasGroup guiData={guiData} filter={filter}/>
   </>)
 }
