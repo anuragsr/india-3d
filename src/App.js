@@ -154,7 +154,15 @@ const CameraControls = () => {
       <group ref={infoRef}>
         <Html style={{ pointerEvents: "none" }}>
           <div className={`ctn-info-box ${!selectedState ? "hidden" : ""}`}>
-            {selectedState && selectedState.state.eng}
+            {selectedState &&
+              <div>
+                <div>State / U.T. : {selectedState.state.eng}</div>
+                <div>Capital : {selectedState.capital.eng}</div>
+                <hr />
+                <div className="hin">राज्य / यू.टी. : {selectedState.state.hin}</div>
+                <div className="hin">राजधानी : {selectedState.capital.hin}</div>
+              </div>
+            }
           </div>
         </Html>
       </group>
@@ -228,13 +236,13 @@ const CameraControls = () => {
       onPointerOver={(e) => {
         e.stopPropagation()
         // l("In", e.eventObject.name)
-        set(StatesData[e.eventObject.name])
+        !child.filter.name.length && set(StatesData[e.eventObject.name])
         // StatesData[e.eventObject.name]
       }}
       onPointerOut={(e) => {
         e.stopPropagation()
         // l("Out", e.eventObject.name)
-        set(null)
+        !child.filter.name.length && set(null)
       }}
       scale-y={scaleYVal}>
       <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />

@@ -9,7 +9,7 @@ export default {
     Rank: "UT6",
     sexRatio: 876,
     state: {
-      eng: "Andaman and Nicobar Islands",
+      eng: "Andaman and Nicobar",
       hin: "अंडमान एवं निकोबार",
     },
     capital: {

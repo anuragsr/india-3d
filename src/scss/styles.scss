@@ -47,7 +47,6 @@ body {
   overflow-y: scroll;
   overflow-x: hidden;
   border-radius: 5px;
-  background: rgba($b, .6);
   box-shadow: 0px 0px 5px 1px rgba($b, .9);
   .t-title{
     font-size: 34px;
@@ -105,17 +104,17 @@ body {
 .ctn-info-box{
   position: relative;
   top: 20px; left: 20px;
-  /* height: 100px;
-  */
-  width: 150px;
+  width: 230px;
+  height: 100px;
   font-size: 12px;
-  padding: 10px;
+  padding: 5px 10px;
   background: $b;
   color: $w;
   border-radius: 5px;
-  border-color: rgba($w, .2);
+  border: 1px solid rgba($w, .3);
   background: rgba($b, .8);
   box-shadow: 0px 0px 5px 1px rgba($b, .9);
-  transition: opacity .3s;
+  transition: opacity .2s;
+  .hin{ font-size: 14px; }
   &.hidden{ opacity: 0; }
 }
