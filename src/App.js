@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, Suspense, useMemo } from 'react'
+import React, { useRef, useState, useEffect, useMemo, setGlobal, useGlobal, Suspense } from 'reactn'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -17,6 +17,7 @@ import { l, cl } from 'helpers'
 
 // Make OrbitControls known as <orbitControls />
 extend({ OrbitControls })
+setGlobal({ selectedState: null })
 
 const total = {
   population: 0,
@@ -122,23 +123,27 @@ const CameraControls = () => {
     </pointLight>
   )
 }
-, States = ({ name, url, position, filter }) => {
+, States = ({ name, url, position, filter, showInfo }) => {
   if(!filter.name.length) currPos = -4, finalPos = 0
   else currPos = 0, finalPos = -4
 
   const gltf = useLoader(GLTFLoader, url )
   , ref = useRef()
+  , infoRef = useRef()
   , { viewport } = useThree() // viewport -> canvas in 3d units (meters)
   , from = { pos: currPos }
   , to = { pos: finalPos }
   , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
   , { pos } = useSpring({ from, to, config })
+  , [selectedState, set] = useGlobal('selectedState')
 
   useFrame(({ mouse }) => {
     const x = (mouse.x * viewport.width) / 1000
     , y = (mouse.y * viewport.height) / 1000
 
-    ref.current && ref.current.rotation.set(-y, filter.name.length ? x + .25 : x, 0)
+    if(filter.name.length && ref.current) ref.current.rotation.set(-y, x + .25, 0)
+    // ref.current && ref.current.rotation.set(-y, filter.name.length ? x + .25 : x, 0)
+    infoRef.current && infoRef.current.position.set(mouse.x * viewport.width/2, mouse.y * viewport.height/2, 0)
   })
 
   return (
@@ -146,6 +151,13 @@ const CameraControls = () => {
       {gltf.scene.children.map((child, idx) => (
         <StateSingle key={idx} filter={filter} {...child}/>
       ))}
+      <group ref={infoRef}>
+        <Html style={{ pointerEvents: "none" }}>
+          <div className={`ctn-info-box ${!selectedState ? "hidden" : ""}`}>
+            {selectedState && selectedState.state.eng}
+          </div>
+        </Html>
+      </group>
     </animated.group>
   )
 }
@@ -209,23 +221,23 @@ const CameraControls = () => {
 
   const to = { color, scaleY }
   , { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
-  , [op, setOp] = useState(1)
+  , [selectedState, set] = useGlobal('selectedState')
 
   return (
     <animated.mesh { ...child }
-      // onPointerOver={(e) => {
-      //   e.stopPropagation()
-      //   l("In", e.eventObject.name)
-      //   // !child.filter.name.length && setOp(.3)
-      //   // StatesData[e.eventObject.name]
-      // }}
-      // onPointerOut={(e) => {
-      //   e.stopPropagation()
-      //   l("Out", e.eventObject.name)
-      //   // !child.filter.name.length && setOp(1)
-      // }}
+      onPointerOver={(e) => {
+        e.stopPropagation()
+        // l("In", e.eventObject.name)
+        set(StatesData[e.eventObject.name])
+        // StatesData[e.eventObject.name]
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation()
+        // l("Out", e.eventObject.name)
+        set(null)
+      }}
       scale-y={scaleYVal}>
-      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} opacity={op} />
+      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />
     </animated.mesh>
   )
 }
@@ -451,7 +463,7 @@ const CameraControls = () => {
         {filters.map((item, i) => (
           <TextGroup key={i} visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
         ))}
-        <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+        <States showInfo={false} filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
         <Table filter={filter} position={[15.5, -2, 0]} data={getStateData(filter.name)} />
       </Suspense>
     </Canvas>
@@ -507,8 +519,11 @@ export default function App() {
     {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
     <div className={`bg ${filter.name.length ? "active" : ""}`}/>
     <div className="ctn-controls">
-      <select className="ctn-select" onChange={e => { setFilter(filters[e.target.value]) }}>
-        <option value={{ name: "" }}>-- 1 / Select Category --</option>
+      <select className="ctn-select" onChange={e => {
+        if(e.target.value.length) setFilter(filters[e.target.value])
+        else setFilter({ name: "" })
+      }}>
+        <option value="">-- श्रेणी चुनें / Select Category --</option>
         {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
       </select>
     </div>

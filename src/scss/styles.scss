@@ -103,7 +103,19 @@ body {
 }
 
 .ctn-info-box{
-  height: 100px;
-  width: 100px;
+  position: relative;
+  top: 20px; left: 20px;
+  /* height: 100px;
+  */
+  width: 150px;
+  font-size: 12px;
+  padding: 10px;
   background: $b;
+  color: $w;
+  border-radius: 5px;
+  border-color: rgba($w, .2);
+  background: rgba($b, .8);
+  box-shadow: 0px 0px 5px 1px rgba($b, .9);
+  transition: opacity .3s;
+  &.hidden{ opacity: 0; }
 }
