@@ -18,7 +18,8 @@ body {
   font-family: 'Noto Sans';
 }
 
-.react-dat-gui{ z-index: 2; left: 16px; }
+.react-dat-gui{ z-index: 3; left: 16px; }
+.ctn-controls{ z-index: 2; }
 .ctn-canvas{ z-index: 1; }
 .bg{
   height: 100%;
@@ -27,35 +28,14 @@ body {
   top: 0;
   left: 0;
   z-index: 0;
-  background: url(../img/drk2.jpg) no-repeat center;
+  background: url(../img/bg.jpg) no-repeat center;
   background-size: 250% 210%;
-  background-position: 62% 56%;
   filter: blur(3px);
   transition: all .5s ease-in-out;
-  opacity: 1;
+  background-position: 60.5% 56%;
   &.active{
-    opacity: .8;
-    background-position: 70% 57%;
+    background-position: 66% 57%;
   }
-  .cloud{
-    background: url(../img/cloud.png) repeat-x center;
-    background-size: cover;
-    height: 100%;
-    opacity: .3;
-    animation: cloud 170s infinite alternate;
-  }
-}
-
-@keyframes cloud {
-  0% { background-position: 0vw 50%; }
-  100% { background-position: 100vw 50%; }
-}
-
-.ctn-text-bg{
-  height: 300px;
-  width: 550px;
-  background: rgba($b, .6);
-  border-radius: 5px;  
 }
 
 .ctn-table{
@@ -69,7 +49,6 @@ body {
   border-radius: 5px;
   background: rgba($b, .6);
   box-shadow: 0px 0px 5px 1px rgba($b, .9);
-  /* box-shadow: 0px 0px 5px 1px rgba($w, .3); */
   .t-title{
     font-size: 34px;
     span{ font-size: 22px; }
@@ -89,7 +68,6 @@ body {
     align-items: center;
     border-radius: 5px;
     box-shadow: 0px 0px 5px 1px rgba($b, .9);
-    /* box-shadow: 0px 0px 5px 1px rgba($w, .3); */
   }
   &::-webkit-scrollbar { width: 7px; }
   &::-webkit-scrollbar-track {
@@ -101,4 +79,31 @@ body {
     background: rgba($w, .3);
     /* -webkit-box-shadow: inset 0 0 6px rgba($w, .5); */
   }
+}
+
+.ctn-controls{
+  position: absolute;
+  left: 20px; top: 70px;
+}
+.ctn-select{
+  padding: 5px;
+  overflow: visible;
+  font-size: 25px;
+  color: $w;
+  border-radius: 5px;
+  border-color: rgba($w, .2);
+  background: rgba($b, .8);
+  box-shadow: 0px 0px 5px 1px rgba($b, .9);
+  &:focus{ outline: none; }
+  option{
+    opacity: .7;
+    background: rgba($b, 1);
+    font-size: 20px;
+  }
+}
+
+.ctn-info-box{
+  height: 100px;
+  width: 100px;
+  background: $b;
 }

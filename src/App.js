@@ -34,9 +34,10 @@ const total = {
   { name: "Sex Ratio",      hin: "लिंग अनुपात",   color: "hsl(239, 80%, 20%)" },
   { name: "Forest Cover",   hin: "वन क्षेत्र",       color: "hsl(124, 100%, 20%)" },
 ]
-, rotYTable = -.25
+, rotYTable = -.2
+// , rotYTable = 0
 
-let currPos = 0, finalPos = -6
+let currPos = 0, finalPos = -4
 
 for(const state in StatesData){
   total.population += StatesData[state].population
@@ -122,32 +123,30 @@ const CameraControls = () => {
   )
 }
 , States = ({ name, url, position, filter }) => {
+  if(!filter.name.length) currPos = -4, finalPos = 0
+  else currPos = 0, finalPos = -4
+
   const gltf = useLoader(GLTFLoader, url )
   , ref = useRef()
   , { viewport } = useThree() // viewport -> canvas in 3d units (meters)
-
-  if(!filter.name.length) currPos = -6, finalPos = 0
-  else currPos = 0, finalPos = -6
-
-  const from = { pos: currPos }
+  , from = { pos: currPos }
   , to = { pos: finalPos }
   , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
   , { pos } = useSpring({ from, to, config })
 
   useFrame(({ mouse }) => {
-    const x = (mouse.x * viewport.width) / 200
-    , y = (mouse.y * viewport.height) / 200
+    const x = (mouse.x * viewport.width) / 1000
+    , y = (mouse.y * viewport.height) / 1000
 
-    ref.current && ref.current.rotation.set(-y, x + .2, 0)
+    ref.current && ref.current.rotation.set(-y, filter.name.length ? x + .25 : x, 0)
   })
 
   return (
-    <animated.group ref={ref} name={name}
-      position-x={pos}>{
-      gltf.scene.children.map((child, idx) => (
+    <animated.group ref={ref} name={name} position-x={pos}>
+      {gltf.scene.children.map((child, idx) => (
         <StateSingle key={idx} filter={filter} {...child}/>
-      ))
-    }</animated.group>
+      ))}
+    </animated.group>
   )
 }
 , StateSingle = child => {
@@ -210,20 +209,23 @@ const CameraControls = () => {
 
   const to = { color, scaleY }
   , { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
+  , [op, setOp] = useState(1)
 
   return (
     <animated.mesh { ...child }
       // onPointerOver={(e) => {
       //   e.stopPropagation()
       //   l("In", e.eventObject.name)
+      //   // !child.filter.name.length && setOp(.3)
       //   // StatesData[e.eventObject.name]
       // }}
       // onPointerOut={(e) => {
       //   e.stopPropagation()
       //   l("Out", e.eventObject.name)
+      //   // !child.filter.name.length && setOp(1)
       // }}
       scale-y={scaleYVal}>
-      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />
+      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} opacity={op} />
     </animated.mesh>
   )
 }
@@ -317,7 +319,6 @@ const CameraControls = () => {
 
   return (
     <animated.group position={position} visible={visible} rotation-y={rotationY}>
-      {/*<Html transform={true} position={[0, 0, -5]}><div className="ctn-text-bg"></div></Html>*/}
       <Text3DHindi
         text={hin}
         color={color}
@@ -328,6 +329,10 @@ const CameraControls = () => {
         color={color}
         extrudeConfig={extrudeConfig}
       />
+      <mesh position={[0, 1.25, -.2]}>
+        <planeBufferGeometry args={[14, 5]} />
+        <meshPhongMaterial color={'black'} transparent={true} opacity={.9} />
+      </mesh>
     </animated.group>
   )
 }
@@ -417,9 +422,9 @@ const CameraControls = () => {
   }
   return row
 }
-, CanvasGroup = props => {
+, THREEScene = props => {
   const { guiData, filter } = props
-  , position = [12, 7, 0]
+  , position = [15.5, 7, 0]
   , getStateData = type => Object.entries(StatesData).sort((a, b) => {
     let field = ""
     switch(type){
@@ -439,7 +444,7 @@ const CameraControls = () => {
   return (
     <Canvas className="ctn-canvas" camera={{ position: [0, 0, 19] }} {...props}>
       <ambientLight intensity={.3} />
-      <PointLightWithHelper visible={guiData.showHelpers} color={0xffffff} intensity={.4} position={[10, 50, 50]}/>
+      <PointLightWithHelper visible={guiData.showHelpers} color={0xffffff} intensity={.3} position={[10, 0, 50]}/>
       {guiData.showHelpers && <><gridHelper args={[1000, 100]}/><axesHelper args={[500]} /></>}
       <CameraControls />
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
@@ -447,7 +452,7 @@ const CameraControls = () => {
           <TextGroup key={i} visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
         ))}
         <States filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
-        <Table filter={filter} position={[12.5, -2, 0]} data={getStateData(filter.name)} />
+        <Table filter={filter} position={[15.5, -2, 0]} data={getStateData(filter.name)} />
       </Suspense>
     </Canvas>
   )
@@ -458,7 +463,7 @@ export default function App() {
 
   const [guiData, setGuiData] = useState({ showHelpers: true })
   , [filter, setFilter] = useState({ name: "" })
-  , [camera, setCamera] = useState(null)
+  , [toggle, setToggle] = useState(false)
   , { showHelpers } = guiData
 
   useEffect(() => {
@@ -486,16 +491,27 @@ export default function App() {
     })
   }, [])
 
+  useEffect(() => {
+    if(!toggle) setFilter({ name: "" })
+    else setFilter(filters[0])
+  }, [toggle])
+
   return (<>
     <DatGui data={guiData} onUpdate={setGuiData}>
       <DatBoolean path='showHelpers' label='Show Helpers' />
-      <DatFolder title='Filters' closed={false}>
+      <DatFolder title='Filters' closed={!false}>
         {filters.map((filter, i) => ( <DatButton key={i} label={filter.name} onClick={() => { setFilter(filter) }} /> ))}
         <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
       </DatFolder>
     </DatGui>
     {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
-    <div className={`bg ${filter.name.length ? "active" : ""}`}><div className="cloud"/></div>
-    <CanvasGroup guiData={guiData} filter={filter}/>
+    <div className={`bg ${filter.name.length ? "active" : ""}`}/>
+    <div className="ctn-controls">
+      <select className="ctn-select" onChange={e => { setFilter(filters[e.target.value]) }}>
+        <option value={{ name: "" }}>-- 1 / Select Category --</option>
+        {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
+      </select>
+    </div>
+    <THREEScene guiData={guiData} filter={filter}/>
   </>)
 }
