@@ -38,7 +38,7 @@ const total = {
 , rotYTable = -.2
 // , rotYTable = 0
 
-let currPos = 0, finalPos = -4
+let currPos, finalPos
 
 for(const state in StatesData){
   total.population += StatesData[state].population
@@ -142,27 +142,22 @@ const CameraControls = () => {
     , y = (mouse.y * viewport.height) / 1000
 
     if(filter.name.length && ref.current) ref.current.rotation.set(-y, x + .25, 0)
-    // ref.current && ref.current.rotation.set(-y, filter.name.length ? x + .25 : x, 0)
     infoRef.current && infoRef.current.position.set(mouse.x * viewport.width/2, mouse.y * viewport.height/2, 0)
   })
 
   return (
     <animated.group ref={ref} name={name} position-x={pos}>
-      {gltf.scene.children.map((child, idx) => (
-        <StateSingle key={idx} filter={filter} {...child}/>
-      ))}
+      {gltf.scene.children.map((child, idx) => <StateSingle key={idx} filter={filter} {...child}/>)}
       <group ref={infoRef}>
         <Html style={{ pointerEvents: "none" }}>
           <div className={`ctn-info-box ${!selectedState ? "hidden" : ""}`}>
-            {selectedState &&
-              <div>
-                <div>State / U.T. : {selectedState.state.eng}</div>
-                <div>Capital : {selectedState.capital.eng}</div>
-                <hr />
-                <div className="hin">राज्य / यू.टी. : {selectedState.state.hin}</div>
-                <div className="hin">राजधानी : {selectedState.capital.hin}</div>
-              </div>
-            }
+            {selectedState && <div>
+              <div className="hin">राज्य / यू.टी. : {selectedState.state.hin}</div>
+              <div className="hin">राजधानी : {selectedState.capital.hin}</div>
+              <hr />
+              <div>State / U.T. : {selectedState.state.eng}</div>
+              <div>Capital : {selectedState.capital.eng}</div>
+            </div>}
           </div>
         </Html>
       </group>
@@ -237,7 +232,6 @@ const CameraControls = () => {
         e.stopPropagation()
         // l("In", e.eventObject.name)
         !child.filter.name.length && set(StatesData[e.eventObject.name])
-        // StatesData[e.eventObject.name]
       }}
       onPointerOut={(e) => {
         e.stopPropagation()
@@ -383,7 +377,7 @@ const CameraControls = () => {
           {data.map((item, i) => (
             <div key={i} className="t-row" style={{ backgroundColor: filter.color }}>
               <div className="name"
-                style={{ width: filter.name === filters[0].name ? 150 : 200 }}>
+                style={{ width: filter.name === filters[0].name ? 150 : 250 }}>
                 {item[1].state.hin}<br/><span>{item[1].state.eng}</span>
               </div>
               <TableRow filter={filter} state={item[1]}/>
@@ -480,8 +474,8 @@ const CameraControls = () => {
 
 export default function App() {
   cl(); l(total)
-
-  const [guiData, setGuiData] = useState({ showHelpers: true })
+  const env = process.env.REACT_APP_ENV_TYPE
+  , [guiData, setGuiData] = useState({ showHelpers: !true })
   , [filter, setFilter] = useState({ name: "" })
   , [toggle, setToggle] = useState(false)
   , { showHelpers } = guiData
@@ -517,14 +511,16 @@ export default function App() {
   }, [toggle])
 
   return (<>
-    <DatGui data={guiData} onUpdate={setGuiData}>
-      <DatBoolean path='showHelpers' label='Show Helpers' />
-      <DatFolder title='Filters' closed={!false}>
-        {filters.map((filter, i) => ( <DatButton key={i} label={filter.name} onClick={() => { setFilter(filter) }} /> ))}
-        <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
-      </DatFolder>
-    </DatGui>
-    {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
+    {env === "dev" && <>
+      <DatGui data={guiData} onUpdate={setGuiData}>
+        <DatBoolean path='showHelpers' label='Show Helpers' />
+        <DatFolder title='Filters' closed={!false}>
+          {filters.map((filter, i) => <DatButton key={i} label={filter.name} onClick={() => { setFilter(filter) }} />)}
+          <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
+        </DatFolder>
+      </DatGui>
+      {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
+    </>}
     <div className={`bg ${filter.name.length ? "active" : ""}`}/>
     <div className="ctn-controls">
       <select className="ctn-select" onChange={e => {
