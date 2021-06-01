@@ -479,6 +479,11 @@ export default function App() {
   , [filter, setFilter] = useState({ name: "" })
   , [toggle, setToggle] = useState(false)
   , { showHelpers } = guiData
+  , hideOverlay = () => {
+    const arr = [".overlay", ".overlay .ctn-btn", ".overlay .l", ".overlay .r"]
+    document.querySelectorAll(arr.join(",")).forEach(el => el.classList.toggle("hidden"))
+    document.querySelector(".ctn-canvas").classList.toggle("shown")
+  }
 
   useEffect(() => {
     new HttpService()
@@ -514,6 +519,7 @@ export default function App() {
     {env === "dev" && <>
       <DatGui data={guiData} onUpdate={setGuiData}>
         <DatBoolean path='showHelpers' label='Show Helpers' />
+        <DatButton label='Intro' onClick={hideOverlay} />
         <DatFolder title='Filters' closed={!false}>
           {filters.map((filter, i) => <DatButton key={i} label={filter.name} onClick={() => { setFilter(filter) }} />)}
           <DatButton label='Normal' onClick={() => { setFilter({ name: "" }); }} />
@@ -521,13 +527,22 @@ export default function App() {
       </DatGui>
       {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
     </>}
+    <div className="overlay">
+      <div className="ctn-btn" onClick={hideOverlay}></div>
+      <div className="l">
+        <h1>BIG TEXT HERE</h1>
+      </div>
+      <div className="r">
+        <h1>BIG TEXT HERE</h1>
+      </div>
+    </div>
     <div className={`bg ${filter.name.length ? "active" : ""}`}/>
     <div className="ctn-controls">
       <select className="ctn-select" onChange={e => {
         if(e.target.value.length) setFilter(filters[e.target.value])
         else setFilter({ name: "" })
       }}>
-        <option value="">-- श्रेणी चुनें / Select Category --</option>
+        <option value="">राजनीतिक / Political</option>
         {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
       </select>
     </div>

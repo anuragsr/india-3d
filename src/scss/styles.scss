@@ -18,9 +18,99 @@ body {
   font-family: 'Noto Sans';
 }
 
-.react-dat-gui{ z-index: 3; left: 16px; }
+.react-dat-gui{ z-index: 4; left: 16px; }
+.overlay{
+  $pad: 35;
+  z-index: 3;
+  position: absolute;
+  top: #{$pad}px; left: #{$pad}px;
+  bottom: #{$pad}px; right: #{$pad}px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px 1px rgba($b, 1);
+  transition: all .5s;
+  .l, .r{
+    backdrop-filter: blur(20px);
+    position: absolute;
+    z-index: -1;
+    height: 100%;
+    transition: all .5s;
+    transition-delay: .2s;
+    color: $w;
+    h1{
+      font-size: 4.5vw;
+      position: relative;
+    }
+  }
+  .l{
+    background: rgba(#0c1133, .85);
+    clip-path: polygon(0% 0%, 100% 0%, 85.4% 100%, 0% 100%);
+    left: 0;
+    width: 54%;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    &.hidden{ left: -65%; }
+    h1{ right: -10%; }
+  }
+  .r{
+    background: rgba(#494a57, .85);
+    clip-path: polygon(14.4% 0%, 100% 0%, 100% 100%, 0% 100%);
+    right: 0;
+    width: 53.9%;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    &.hidden{ right: -65%; }
+    h1{ left: 20%; }
+  }
+  .ctn-btn{
+    $r: 30;
+    height: #{2*$r}px;
+    width: #{2*$r}px;
+    border-radius: 50%;
+    position: relative;
+    background: $w;
+    box-shadow: 0px 0px 5px 1px rgba($b, .5);
+    cursor: pointer;
+    transition: all .4s;
+    &:after, &:before{
+      position: absolute;
+      content: " ";
+      height: 1px;
+      width: 50px;
+      background: $w;
+      top: 50%;
+      transition: all .2s;
+    }
+    &:after{ right: 50%; }
+    &:before{ left: 50%; }
+    &:hover{
+      box-shadow: 0px 0px 5px 1px rgba($w, .5);
+      transform: rotate(25deg);
+      &:after{ right: 75%; }
+      &:before{ left: 75%; }
+    }
+    &.hidden{
+      transform: rotate(99deg);
+      opacity: 0;
+      &:after{ right: 100%; }
+      &:before{ left: 100%; }
+    }
+  }
+  &.hidden{
+    pointer-events: none;
+    box-shadow: 0px 0px 5px 1px rgba($b, 0);
+  }
+}
 .ctn-controls{ z-index: 2; }
-.ctn-canvas{ z-index: 1; }
+.ctn-canvas{
+  z-index: 1;
+  opacity: 0;
+  transition: all .3s;
+  transition-delay: .3s;
+  &.shown{ opacity: 1; }
+}
 .bg{
   height: 100%;
   width: 100%;
@@ -47,7 +137,8 @@ body {
   overflow-y: scroll;
   overflow-x: hidden;
   border-radius: 5px;
-  box-shadow: 0px 0px 5px 1px rgba($b, .9);
+  background: rgba($b, .8);
+  box-shadow: 0px 0px 5px 1px rgba($b, .8);
   .t-title{
     font-size: 34px;
     span{ font-size: 22px; }
@@ -85,6 +176,7 @@ body {
   left: 50px; top: 50px;
 }
 .ctn-select{
+  font-family: 'Noto Sans';
   padding: 5px;
   overflow: visible;
   font-size: 25px;
@@ -115,6 +207,6 @@ body {
   background: rgba($b, .8);
   box-shadow: 0px 0px 5px 1px rgba($b, .9);
   transition: opacity .2s;
-  .hin{ font-size: 14px; }
   &.hidden{ opacity: 0; }
+  .hin{ font-size: 14px; }
 }
