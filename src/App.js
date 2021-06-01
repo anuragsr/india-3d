@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { animated, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
+import NProgress from 'nprogress'
 
 import StatesData from 'helpers/indiaStatesObj'
 import HttpService from 'helpers/HttpService'
@@ -136,6 +137,9 @@ const CameraControls = () => {
   , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
   , { pos } = useSpring({ from, to, config })
   , [selectedState, set] = useGlobal('selectedState')
+
+  NProgress.done()
+  document.querySelector(".overlay .ctn-btn").classList.add("enabled")
 
   useFrame(({ mouse }) => {
     const x = (mouse.x * viewport.width) / 1000
@@ -474,6 +478,7 @@ const CameraControls = () => {
 
 export default function App() {
   cl(); l(total)
+
   const env = process.env.REACT_APP_ENV_TYPE
   , [guiData, setGuiData] = useState({ showHelpers: !true })
   , [filter, setFilter] = useState({ name: "" })
@@ -482,10 +487,13 @@ export default function App() {
   , hideOverlay = () => {
     const arr = [".overlay", ".overlay .ctn-btn", ".overlay .l", ".overlay .r"]
     document.querySelectorAll(arr.join(",")).forEach(el => el.classList.toggle("hidden"))
-    document.querySelector(".ctn-canvas").classList.toggle("shown")
+    document.querySelector(".ctn-canvas").classList.add("shown")
+    document.querySelector(".ctn-html").classList.add("shown")
   }
 
   useEffect(() => {
+    NProgress.start()
+
     new HttpService()
     .get('https://api.covid19india.org/data.json')
     .then(res => {
@@ -528,23 +536,57 @@ export default function App() {
       {showHelpers && <FPSStats bottom={20} left={16} top={"unset"}/>}
     </>}
     <div className="overlay">
-      <div className="ctn-btn" onClick={hideOverlay}></div>
+      <div className="ctn-btn" onClick={hideOverlay}>
+        <div className="sm sm1">प्रवेश</div>
+        <img src="assets/Ashoka_Chakra.svg" alt=""/>
+        <div className="sm sm2">Enter</div>
+      </div>
       <div className="l">
-        <h1>BIG TEXT HERE</h1>
+        <div className="inner">
+          <div className="ctn-text shown">
+            <h1>India 3D</h1>
+            <p>A land of many cultures..a melting pot of<br/> religious, social & ecological diversity.</p>
+            <p>This project is a state-wise graphical representation<br/> of the country based on 8 different criteria.</p>
+            <p>An informative, educational initiative.</p>
+          </div>
+        </div>
       </div>
       <div className="r">
-        <h1>BIG TEXT HERE</h1>
+        <div className="inner">
+          <div className="ctn-text shown">
+            <h1>भारत 3डी</h1>
+            <p>कई संस्कृतियों की भूमि..धार्मिक, सामाजिक<br/> और पारिस्थितिक विविधता का प्रतीक।</p>
+            <p>यह प्रोजेक्ट 8 विभिन्न मानदंडों के आधार पर<br/>देश का राज्यानुसार ग्राफिकल प्रतिनिधित्व है।</p>
+            <p>एक सूचनात्मक, शैक्षिक पहल।</p>
+          </div>
+        </div>
       </div>
     </div>
     <div className={`bg ${filter.name.length ? "active" : ""}`}/>
-    <div className="ctn-controls">
-      <select className="ctn-select" onChange={e => {
-        if(e.target.value.length) setFilter(filters[e.target.value])
-        else setFilter({ name: "" })
-      }}>
-        <option value="">राजनीतिक / Political</option>
-        {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
-      </select>
+    <div className="ctn-html">
+      <div className="ctn-select">
+        <select onChange={e => {
+          if(e.target.value.length) setFilter(filters[e.target.value])
+          else setFilter({ name: "" })
+          }}>
+          <option value="">राजनीतिक / Political</option>
+          {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
+        </select>
+        <p>
+          <span>संबंधित विज़ुअलाइज़ेशन देखने के लिए एक श्रेणी का चयन करें</span><br/>
+          Select a category to view the corresponding visualization
+        </p>
+      </div>
+      <div className="ctn-info">
+        <div className="title">
+          <img src="assets/indian_gov_logo.png" alt=""/>
+          <div><span>भारत गणराज्य</span><br/>Republic of India</div>
+        </div>
+        <p className="ins">
+          <span>अतिरिक्त जानकारी देखने के लिए अलग-अलग राज्यों पर माउस ले जाएँ</span><br/>
+          Move mouse over individual states to view additional info
+        </p>
+      </div>
     </div>
     <THREEScene guiData={guiData} filter={filter}/>
   </>)
