@@ -255,6 +255,7 @@ body {
     position: absolute;
     z-index: 2;
     top: #{$pad}px; left: #{$pad}px;
+    p{ margin-top: 0; }
     select{
       font-family: 'Noto Sans';
       padding: 5px;
@@ -278,7 +279,7 @@ body {
     z-index: 2;
     top: #{$pad}px; right: #{$pad}px;
     .title{
-      @extend %j-f-s;
+      @extend %j-c;
       @extend %gb;
       font-size: 2vw;
       padding: 15px;
@@ -290,10 +291,16 @@ body {
       }
       span{ font-size: 3vw; }
     }
-    .ins{
-      /* @extend %gb;
-      padding: 15px;       */
+  }
+  .ctn-desc{
+    position: absolute;
+    z-index: 2;
+    bottom: #{$pad/5}px; right: #{$pad}px;
+    p{
+      font-size: .7vw;
+      span{ font-size: .75vw; }
     }
+    a{ text-decoration: none; color: green; }
   }
 }
 

@@ -565,6 +565,10 @@ export default function App() {
     <div className={`bg ${filter.name.length ? "active" : ""}`}/>
     <div className="ctn-html">
       <div className="ctn-select">
+        <p>
+          <span>संबंधित विज़ुअलाइज़ेशन देखने के लिए एक श्रेणी का चयन करें</span><br/>
+          Select a category to view the corresponding visualization
+        </p>
         <select onChange={e => {
           if(e.target.value.length) setFilter(filters[e.target.value])
           else setFilter({ name: "" })
@@ -572,10 +576,6 @@ export default function App() {
           <option value="">राजनीतिक / Political</option>
           {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
         </select>
-        <p>
-          <span>संबंधित विज़ुअलाइज़ेशन देखने के लिए एक श्रेणी का चयन करें</span><br/>
-          Select a category to view the corresponding visualization
-        </p>
       </div>
       <div className="ctn-info">
         <div className="title">
@@ -585,6 +585,15 @@ export default function App() {
         <p className="ins">
           <span>अतिरिक्त जानकारी देखने के लिए अलग-अलग राज्यों पर माउस ले जाएँ</span><br/>
           Move mouse over individual states to view additional info
+        </p>
+      </div>
+      <div className="ctn-desc">
+        <p>
+          <span>सभी डेटा सौजन्य / </span>All data courtesy: <a target="_blank" href="https://en.wikipedia.org">Wikipedia</a>&nbsp;<br/>
+          <span>कोविड डेटा सौजन्य / </span>Covid data courtesy: <a target="_blank" href="https://covid19india.org">api.covid19india.org</a>&nbsp;
+          <br/><br/>
+          <span>डेटा केवल विज़ुअलाइज़ेशन उद्देश्यों के लिए है; 100% सटीक नहीं हो सकता है।</span><br/>
+          Data may not be 100% accurate; intended for visualization purposes only.
         </p>
       </div>
     </div>
