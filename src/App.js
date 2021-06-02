@@ -593,8 +593,8 @@ export default function App() {
     <div className="ctn-html">
       <div className="ctn-select">
         <p>
-          <span>संबंधित विज़ुअलाइज़ेशन देखने के लिए एक श्रेणी का चयन करें</span><br/>
-          Select a category to view the corresponding visualization
+          <span>संबंधित ग्राफिक देखने के लिए एक श्रेणी का चयन करें</span><br/>
+          Select a category to view its visualization
         </p>
         <select onChange={e => {
             if(e.target.value.length) setFilter(filters[e.target.value])
@@ -603,30 +603,6 @@ export default function App() {
           <option value="">राजनीतिक / Political</option>
           {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
         </select>
-        <div className="ctn-about">
-          <h2>भारत 3D / India 3D</h2>
-          <div>by&nbsp;
-            <a href="http://envisagecyberart.in" target="_blank">अनुराग श्रीवास्तव</a> /&nbsp;
-            <a href="http://envisagecyberart.in" target="_blank">Anurag Srivastava</a><br/>
-            <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">अधिक 3D प्रोजेक्ट</a> /&nbsp;
-            <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">More 3D projects</a>
-          </div>
-          <a href="https://www.upwork.com/o/profiles/users/~01d929751d145a05ea/" target="_blank">
-            <img src="assets/images/upwork.png" alt="" />
-          </a>
-          <a href="https://www.guru.com/freelancers/anurag-srivastava-27" target="_blank">
-            <img src="assets/images/guru.png" alt="" />
-          </a>
-          <a href="mailto:anurag.131092@gmail.com&Subject=New Work Proposal">
-            <img src="assets/images/gmail.png" alt="" />
-          </a>
-          <a href="https://stackoverflow.com/users/7867822/anurag-srivastava" target="_blank">
-            <img src="assets/images/so.png" alt="" />
-          </a>
-          <a href="https://github.com/anuragsr" target="_blank">
-            <img className="last" src="assets/images/github.png" alt="" />
-          </a>
-        </div>
       </div>
       <animatedHtml.div className="ctn-info" style={{ opacity }}>
         <div className="title">
@@ -647,6 +623,31 @@ export default function App() {
           <span>डेटा केवल कल्पना के उद्देश्य के लिए है; 100% सटीक नहीं हो सकता है</span><br/>
           Data may not be 100% accurate; intended for visualization purposes only
         </p>
+      </div>
+
+      <div className="ctn-about">
+        <h2>भारत 3D / India 3D</h2>
+        <div>by&nbsp;
+          <a href="http://envisagecyberart.in" target="_blank">अनुराग श्रीवास्तव</a> /&nbsp;
+          <a href="http://envisagecyberart.in" target="_blank">Anurag Srivastava</a><br/>
+          <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">अधिक 3D प्रोजेक्ट</a> /&nbsp;
+          <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">More 3D projects</a>
+        </div>
+        <a href="https://www.upwork.com/o/profiles/users/~01d929751d145a05ea/" target="_blank">
+          <img src="assets/images/upwork.png" alt="" />
+        </a>
+        <a href="https://www.guru.com/freelancers/anurag-srivastava-27" target="_blank">
+          <img src="assets/images/guru.png" alt="" />
+        </a>
+        <a href="mailto:anurag.131092@gmail.com&Subject=New Work Proposal">
+          <img src="assets/images/gmail.png" alt="" />
+        </a>
+        <a href="https://stackoverflow.com/users/7867822/anurag-srivastava" target="_blank">
+          <img src="assets/images/so.png" alt="" />
+        </a>
+        <a href="https://github.com/anuragsr" target="_blank">
+          <img className="last" src="assets/images/github.png" alt="" />
+        </a>
       </div>
     </div>
     <THREEScene guiData={guiData} filter={filter}/>
