@@ -70,6 +70,7 @@ body {
       margin-bottom: .75vh;
       font-size: 1.35vw;
       font-weight: 400;
+      img{ height: 1vw; }
     }
   }
   .l{
@@ -246,7 +247,6 @@ body {
   transition-delay: .3s;
   &.shown{ opacity: 1; }
   p{
-    @extend %gb;
     padding: 15px;
     font-size: .85vw;
     span{ font-size: 1vw; }
@@ -255,22 +255,19 @@ body {
     position: absolute;
     z-index: 2;
     top: #{$pad}px; left: #{$pad}px;
-    p{ margin-top: 0; }
+    p{ margin-top: 0; @extend %gb; }
     select{
       font-family: 'Noto Sans';
       padding: 5px;
       overflow: visible;
-      font-size: 25px;
+      font-size: 1vw;
       color: $w;
-      border-radius: 5px;
-      border-color: rgba($w, .2);
-      background: rgba($b, .8);
-      box-shadow: 0px 0px 5px 1px rgba($b, .9);
+      @extend %gb;
       &:focus{ outline: none; }
       option{
         opacity: .7;
         background: rgba($b, 1);
-        font-size: 20px;
+        font-size: 1vw;
       }
     }
   }
@@ -291,16 +288,26 @@ body {
       }
       span{ font-size: 3vw; }
     }
+    .ins{ @extend %gb; }
   }
-  .ctn-desc{
+  .ctn-foot{
     position: absolute;
     z-index: 2;
-    bottom: #{$pad/5}px; right: #{$pad}px;
+    bottom: 5px;
+    right: 25vw;
+    left: 25vw;
+    @extend %j-c;
+    /* @extend %gb; */
     p{
+      margin: 0;
+      padding: 5px 10px;
       font-size: .7vw;
       span{ font-size: .75vw; }
     }
-    a{ text-decoration: none; color: green; }
+    a{
+      color: #FF9933;
+      &:hover{ text-decoration: none; }
+    }
   }
 }
 
@@ -317,4 +324,42 @@ body {
   transition: opacity .2s;
   &.hidden{ opacity: 0; }
   .hin{ font-size: 14px; }
+}
+
+.ctn-about{
+  /* @include pa("", 50, 30, "");
+  z-index: 2; */
+  @extend %gb;
+  padding: 10px;
+  color: $w;
+  transition: all .3s;
+  margin-top: 50px;
+  width: 15vw;
+  h2{
+    margin: 0;
+    font-weight: 400;
+    font-size: 1vw;
+  }
+  div{
+    line-height: 1.6;
+    font-size: .75vw;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    a{
+      text-decoration: none;
+      color: $w;
+      &:hover{ text-decoration: underline; }
+    }
+  }
+  img{
+    height: 25px;
+    margin-right: 10px;
+    opacity: .8;
+    transition: all .3s;
+    &.last{ margin-right: 0; }
+    &:hover{
+      opacity: 1;
+      transform: rotate(10deg) scale(1.25);
+    }
+  }
 }

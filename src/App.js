@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect, useMemo, setGlobal, useGlobal, Suspense } from 'reactn'
+import { animated as animatedHtml } from 'react-spring'
 import { extend, Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
+import { animated, useSpring } from '@react-spring/three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { animated, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
 import NProgress from 'nprogress'
 
@@ -229,21 +230,29 @@ const CameraControls = () => {
   const to = { color, scaleY }
   , { color: colorVal, scaleY: scaleYVal } = useSpring({ from, to, config })
   , [selectedState, set] = useGlobal('selectedState')
+  , [hovered, setHovered] = useState(false)
+  , { opacity } = useSpring({ opacity: hovered ? .6 : 1 })
 
   return (
     <animated.mesh { ...child }
       onPointerOver={(e) => {
         e.stopPropagation()
         // l("In", e.eventObject.name)
-        !child.filter.name.length && set(StatesData[e.eventObject.name])
+        if(!child.filter.name.length){
+          set(StatesData[e.eventObject.name])
+          setHovered(true)
+        }
       }}
       onPointerOut={(e) => {
         e.stopPropagation()
         // l("Out", e.eventObject.name)
-        !child.filter.name.length && set(null)
+        if(!child.filter.name.length){
+          set(null)
+          setHovered(false)
+        }
       }}
       scale-y={scaleYVal}>
-      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} />
+      <animated.meshPhongMaterial side={THREE.DoubleSide} color={colorVal} transparent={true} opacity={opacity}/>
     </animated.mesh>
   )
 }
@@ -440,6 +449,22 @@ const CameraControls = () => {
   }
   return row
 }
+, Sound = ({ url }) => {
+  const soundRef = useRef()
+  , { camera } = useThree()
+  , [listener] = useState(() => new THREE.AudioListener())
+  , buffer = useLoader(THREE.AudioLoader, url)
+
+  useEffect(() => {
+    const sound = soundRef.current
+    sound.setBuffer(buffer)
+    sound.setVolume(.3)
+    sound.setLoop(true)
+    sound.play()
+  }, [])
+
+  return <positionalAudio ref={soundRef} args={[listener]} />
+}
 , THREEScene = props => {
   const { guiData, filter } = props
   , position = [15.5, 7, 0]
@@ -458,18 +483,20 @@ const CameraControls = () => {
     }
     return a[1][field] < b[1][field] ? 1 : -1
   })
+  , env = process.env.REACT_APP_ENV_TYPE
 
   return (
     <Canvas className="ctn-canvas" camera={{ position: [0, 0, 19] }} {...props}>
       <ambientLight intensity={.3} />
       <PointLightWithHelper visible={guiData.showHelpers} color={0xffffff} intensity={.3} position={[10, 0, 50]}/>
       {guiData.showHelpers && <><gridHelper args={[1000, 100]}/><axesHelper args={[500]} /></>}
-      <CameraControls />
+      {env === "dev" && <CameraControls />}
       <Suspense fallback={<Box position={[0, 0, 0]} />}>
         {filters.map((item, i) => (
           <TextGroup key={i} visible={filter ? filter.name === item.name : 0} hin={item.hin} eng={item.name} color={new THREE.Color(item.color)} position={position} />
         ))}
         <States showInfo={false} filter={filter} name="States" position={[0, 0, 0]} url="assets/models/states.glb"/>
+        <Sound url="assets/sound/bg.mp3" />
         <Table filter={filter} position={[15.5, -2, 0]} data={getStateData(filter.name)} />
       </Suspense>
     </Canvas>
@@ -482,7 +509,6 @@ export default function App() {
   const env = process.env.REACT_APP_ENV_TYPE
   , [guiData, setGuiData] = useState({ showHelpers: !true })
   , [filter, setFilter] = useState({ name: "" })
-  , [toggle, setToggle] = useState(false)
   , { showHelpers } = guiData
   , hideOverlay = () => {
     const arr = [".overlay", ".overlay .ctn-btn", ".overlay .l", ".overlay .r"]
@@ -490,6 +516,10 @@ export default function App() {
     document.querySelector(".ctn-canvas").classList.add("shown")
     document.querySelector(".ctn-html").classList.add("shown")
   }
+  , from = { op: 1 }
+  , to = { op: 0 }
+  , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
+  , { opacity } = useSpring({ opacity: !filter.name.length ? 1 : 0 })
 
   useEffect(() => {
     NProgress.start()
@@ -518,11 +548,6 @@ export default function App() {
     })
   }, [])
 
-  useEffect(() => {
-    if(!toggle) setFilter({ name: "" })
-    else setFilter(filters[0])
-  }, [toggle])
-
   return (<>
     {env === "dev" && <>
       <DatGui data={guiData} onUpdate={setGuiData}>
@@ -538,7 +563,7 @@ export default function App() {
     <div className="overlay">
       <div className="ctn-btn" onClick={hideOverlay}>
         <div className="sm sm1">प्रवेश</div>
-        <img src="assets/Ashoka_Chakra.svg" alt=""/>
+        <img src="assets/images/Ashoka_Chakra.svg" alt=""/>
         <div className="sm sm2">Enter</div>
       </div>
       <div className="l">
@@ -548,16 +573,18 @@ export default function App() {
             <p>A land of many cultures..a melting pot of<br/> religious, social & ecological diversity.</p>
             <p>This project is a state-wise graphical representation<br/> of the country based on 8 different criteria.</p>
             <p>An informative, educational initiative.</p>
+            <p>Use <img src="assets/images/headphone-tr.png" alt="" /> for better experience.</p>
           </div>
         </div>
       </div>
       <div className="r">
         <div className="inner">
           <div className="ctn-text shown">
-            <h1>भारत 3डी</h1>
+            <h1>भारत 3D</h1>
             <p>कई संस्कृतियों की भूमि..धार्मिक, सामाजिक<br/> और पारिस्थितिक विविधता का प्रतीक।</p>
             <p>यह प्रोजेक्ट 8 विभिन्न मानदंडों के आधार पर<br/>देश का राज्यानुसार ग्राफिकल प्रतिनिधित्व है।</p>
             <p>एक सूचनात्मक, शैक्षिक पहल।</p>
+            <p>बेहतर अनुभव के लिए <img src="assets/images/headphone-tr.png" alt="" /> का इस्तेमाल करें।</p>
           </div>
         </div>
       </div>
@@ -570,30 +597,55 @@ export default function App() {
           Select a category to view the corresponding visualization
         </p>
         <select onChange={e => {
-          if(e.target.value.length) setFilter(filters[e.target.value])
-          else setFilter({ name: "" })
+            if(e.target.value.length) setFilter(filters[e.target.value])
+            else setFilter({ name: "" })
           }}>
           <option value="">राजनीतिक / Political</option>
           {filters.map((item, i) => <option key={i} value={i}>{item.hin} / {item.name}</option>)}
         </select>
+        <div className="ctn-about">
+          <h2>भारत 3D / India 3D</h2>
+          <div>by&nbsp;
+            <a href="http://envisagecyberart.in" target="_blank">अनुराग श्रीवास्तव</a> /&nbsp;
+            <a href="http://envisagecyberart.in" target="_blank">Anurag Srivastava</a><br/>
+            <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">अधिक 3D प्रोजेक्ट</a> /&nbsp;
+            <a href="http://envisagecyberart.in/projects/threejs-experiments" target="_blank">More 3D projects</a>
+          </div>
+          <a href="https://www.upwork.com/o/profiles/users/~01d929751d145a05ea/" target="_blank">
+            <img src="assets/images/upwork.png" alt="" />
+          </a>
+          <a href="https://www.guru.com/freelancers/anurag-srivastava-27" target="_blank">
+            <img src="assets/images/guru.png" alt="" />
+          </a>
+          <a href="mailto:anurag.131092@gmail.com&Subject=New Work Proposal">
+            <img src="assets/images/gmail.png" alt="" />
+          </a>
+          <a href="https://stackoverflow.com/users/7867822/anurag-srivastava" target="_blank">
+            <img src="assets/images/so.png" alt="" />
+          </a>
+          <a href="https://github.com/anuragsr" target="_blank">
+            <img className="last" src="assets/images/github.png" alt="" />
+          </a>
+        </div>
       </div>
-      <div className="ctn-info">
+      <animatedHtml.div className="ctn-info" style={{ opacity }}>
         <div className="title">
-          <img src="assets/indian_gov_logo.png" alt=""/>
+          <img src="assets/images/indian_gov_logo.png" alt=""/>
           <div><span>भारत गणराज्य</span><br/>Republic of India</div>
         </div>
         <p className="ins">
           <span>अतिरिक्त जानकारी देखने के लिए अलग-अलग राज्यों पर माउस ले जाएँ</span><br/>
           Move mouse over individual states to view additional info
         </p>
-      </div>
-      <div className="ctn-desc">
+      </animatedHtml.div>
+      <div className="ctn-foot">
         <p>
           <span>सभी डेटा सौजन्य / </span>All data courtesy: <a target="_blank" href="https://en.wikipedia.org">Wikipedia</a>&nbsp;<br/>
           <span>कोविड डेटा सौजन्य / </span>Covid data courtesy: <a target="_blank" href="https://covid19india.org">api.covid19india.org</a>&nbsp;
-          <br/><br/>
-          <span>डेटा केवल विज़ुअलाइज़ेशन उद्देश्यों के लिए है; 100% सटीक नहीं हो सकता है।</span><br/>
-          Data may not be 100% accurate; intended for visualization purposes only.
+        </p>
+        <p>
+          <span>डेटा केवल कल्पना के उद्देश्य के लिए है; 100% सटीक नहीं हो सकता है</span><br/>
+          Data may not be 100% accurate; intended for visualization purposes only
         </p>
       </div>
     </div>
