@@ -301,8 +301,9 @@ body {
     position: absolute;
     z-index: 2;
     bottom: 5px;
-    right: 25vw;
-    left: 25vw;
+    left: 0; right:0; 
+    /* right: 25vw;
+    left: 25vw; */
     @extend %j-c;
     /* @extend %gb; */
     p{
