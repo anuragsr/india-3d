@@ -198,7 +198,6 @@ export default {
     poverty: 5.09,
     Rank: "25",
     sexRatio: 973,
-    state: "",
     state: {
       eng: "Goa",
       hin: "गोवा",
@@ -427,7 +426,6 @@ export default {
     poverty: 32.59,
     Rank: "23",
     sexRatio: 992,
-    state: "",
     state: {
       eng: "Manipur",
       hin: "मणिपुर",

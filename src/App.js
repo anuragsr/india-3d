@@ -406,8 +406,8 @@ const CameraControls = () => {
   switch (filter.name) {
     case 'Covid 19 Cases':
       head = <>
+        <div>परीक्षण<br/><span>Tested</span></div>
         <div>पुष्टीकृत<br/><span>Confirmed</span></div>
-        <div>सक्रिय<br/><span>Active</span></div>
         <div>स्वस्थ हुए<br/><span>Recovered</span></div>
       </>
     break;
@@ -429,9 +429,9 @@ const CameraControls = () => {
   switch (filter.name) {
     case 'Covid 19 Cases':
       row = state.covidData ? <>
-          <div><span>{format(state.covidData.confirmed)}</span></div>
-          <div><span>{format(state.covidData.active)}</span></div>
-          <div><span>{format(state.covidData.recovered)}</span></div>
+          <div><span>{format(state.covidData.total.tested)}</span></div>
+          <div><span>{format(state.covidData.total.confirmed)}</span></div>
+          <div><span>{format(state.covidData.total.recovered)}</span></div>
         </> : <>
           <div><span>N/A</span></div>
           <div><span>N/A</span></div>
@@ -525,24 +525,33 @@ export default function App() {
     NProgress.start()
 
     new HttpService()
-    .get('https://api.covid19india.org/data.json')
+    // .get('https://api.covid19india.org/data.json')
+    // .get('https://api.covid19india.org/v4/min/data.min.json')
+    .get('https://data.covid19india.org/v4/min/data.min.json')
+    // .get('https://data.covid19india.org/v4/min/timeseries.min.json')
     .then(res => {
-      const data = res.data.statewise
-      total.cases = parseInt(data[0].confirmed)
+      // l(res)
+      // const data = res.data.statewise
+      // data.shift()
 
-      data.shift()
+      const data = res.data
+      total.cases = parseInt(data['TT'].total.confirmed)
       // l(data)
-      data.forEach((item, i) => {
-        // l(item.statecode)
-        if(item.statecode === "CT") item.statecode = "CG"
-        else if(item.statecode === "OR") item.statecode = "OD"
-        else if(item.statecode === "UT") item.statecode = "UK"
-        else if(item.statecode === "TG") item.statecode = "TS"
+      Object.entries(data).forEach((value, i) => {
+        // l(value)
+        let item = value[0]
+        if(item === "TT") return
 
-        if(item.statecode !== "UN"){
-          StatesData[item.statecode].cases = parseInt(item.confirmed)
-          StatesData[item.statecode].covidData = item
+        if(item === "CT") item = "CG"
+        else if(item === "OR") item = "OD"
+        else if(item === "UT") item = "UK"
+        else if(item === "TG") item = "TS"
+
+        if(item !== "UN"){
+          StatesData[item].cases = parseInt(value[1].total.confirmed)
+          StatesData[item].covidData = value[1]
         }
+
       })
       // l(StatesData)
     })
