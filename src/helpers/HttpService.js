@@ -57,6 +57,6 @@ export default class HttpService {
       call = axios.CancelToken.source()
       config.cancelToken = call.token
     }
-    return axios(config)
+    return axios({...config, validateStatus: false})
   }
 }

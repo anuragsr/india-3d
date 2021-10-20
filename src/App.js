@@ -9,6 +9,7 @@ import * as THREE from 'three'
 import NProgress from 'nprogress'
 
 import StatesData from 'helpers/indiaStatesObj'
+import CovidData from 'helpers/data.min.json'
 import HttpService from 'helpers/HttpService'
 
 // Debug
@@ -516,45 +517,36 @@ export default function App() {
     document.querySelector(".ctn-canvas").classList.add("shown")
     document.querySelector(".ctn-html").classList.add("shown")
   }
-  , from = { op: 1 }
-  , to = { op: 0 }
-  , config = { mass: 5, tension: 400, friction: 70, precision: 0.0001 }
   , { opacity } = useSpring({ opacity: !filter.name.length ? 1 : 0 })
+  , prepareStatesData = data => {
+    // l(data)
+    total.cases = parseInt(data['TT'].total.confirmed)
+    Object.entries(data).forEach((value, i) => {
+      // l(value)
+      let item = value[0]
+      if(item === "TT") return
+
+      if(item === "CT") item = "CG"
+      else if(item === "OR") item = "OD"
+      else if(item === "UT") item = "UK"
+      else if(item === "TG") item = "TS"
+
+      if(item !== "UN"){
+        StatesData[item].cases = parseInt(value[1].total.confirmed)
+        StatesData[item].covidData = value[1]
+      }
+    })
+  }
+  , makeRequest = async url => {
+    const res = await new HttpService().get(url)
+    // l(res)
+    if(res.status === 200) prepareStatesData(res.data)
+    else prepareStatesData(CovidData)
+  }
 
   useEffect(() => {
     NProgress.start()
-
-    new HttpService()
-    // .get('https://api.covid19india.org/data.json')
-    // .get('https://api.covid19india.org/v4/min/data.min.json')
-    .get('https://data.covid19india.org/v4/min/data.min.json')
-    // .get('https://data.covid19india.org/v4/min/timeseries.min.json')
-    .then(res => {
-      // l(res)
-      // const data = res.data.statewise
-      // data.shift()
-
-      const data = res.data
-      total.cases = parseInt(data['TT'].total.confirmed)
-      // l(data)
-      Object.entries(data).forEach((value, i) => {
-        // l(value)
-        let item = value[0]
-        if(item === "TT") return
-
-        if(item === "CT") item = "CG"
-        else if(item === "OR") item = "OD"
-        else if(item === "UT") item = "UK"
-        else if(item === "TG") item = "TS"
-
-        if(item !== "UN"){
-          StatesData[item].cases = parseInt(value[1].total.confirmed)
-          StatesData[item].covidData = value[1]
-        }
-
-      })
-      // l(StatesData)
-    })
+    makeRequest('https://data.covid19india.org/v4/min/data.min.json')
   }, [])
 
   return (<>
